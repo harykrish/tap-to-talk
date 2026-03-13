@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Walk With Me</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --sky: #87CEEB;
+    --horizon: #FDB97D;
+    --ground: #4a7c59;
+    --path: #c4a882;
+    --dark: #1a1a2e;
+    --accent: #FF6B35;
+    --gold: #FFD700;
+    --white: #f8f4ee;
+    --card: rgba(255,255,255,0.12);
+    --pulse: #00d4aa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--dark);
+    color: var(--white);
+    min-height: 100vh;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* ── SCREENS ── */
+  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  /* ── WELCOME ── */
+  #welcome {
+    background: radial-gradient(ellipse at 30% 40%, #1a3a5c 0%, #0d1b2a 60%, #1a1a2e 100%);
+  }
+  .welcome-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+  .welcome-title {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #87CEEB, #FFD700, #FF6B35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .welcome-sub {
+    font-size: clamp(0.85rem, 3vw, 1.1rem);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    padding: 0 20px;
+  }
+  .start-btn {
+    background: linear-gradient(135deg, #FF6B35, #e55a27);
+    border: none;
+    color: white;
+    font-family: 'Sora', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255,107,53,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .start-btn:active { transform: scale(0.95); box-shadow: 0 4px 15px rgba(255,107,53,0.4); }
+
+  .stats-row {
+    display: flex; gap: 30px; margin-top: 30px;
+  }
+  .stat-chip {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px 20px;
+  }
+  .stat-chip .val { font-size: 1.4rem; font-weight: 700; color: var(--gold); font-family: 'Space Mono', monospace; }
+  .stat-chip .lbl { font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── IMAGERY PAUSE ── */
+  #imagery {
+    background: radial-gradient(ellipse at center, #0f2d1a 0%, #0a1a0f 100%);
+    padding: 40px 30px;
+    text-align: center;
+  }
+  .imagery-pulse {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,170,0.3) 0%, rgba(0,212,170,0) 70%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 30px;
+    animation: pulse-ring 2s ease-in-out infinite;
+    font-size: 50px;
+  }
+  @keyframes pulse-ring {
+    0%,100%{box-shadow: 0 0 0 0 rgba(0,212,170,0.4), 0 0 0 20px rgba(0,212,170,0.1)}
+    50%{box-shadow: 0 0 0 20px rgba(0,212,170,0.2), 0 0 0 40px rgba(0,212,170,0.05)}
+  }
+  .imagery-title {
+    font-size: 1.6rem; font-weight: 700;
+    color: var(--pulse);
+    margin-bottom: 16px;
+  }
+  .imagery-text {
+    font-size: 1rem; line-height: 1.8;
+    color: rgba(255,255,255,0.8);
+    max-width: 320px; margin: 0 auto 30px;
+  }
+  .imagery-text em { color: var(--pulse); font-style: normal; font-weight: 600; }
+  .imagery-bar-wrap { width: 280px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 0 auto 30px; overflow: hidden; }
+  .imagery-bar { height: 100%; background: linear-gradient(90deg, var(--pulse), #87CEEB); border-radius: 3px; width: 0%; transition: width 0.1s linear; }
+  .imagery-skip { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.4); font-family: 'Sora', sans-serif; font-size: 0.8rem; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
+
+  /* ── GAME ── */
+  #game { background: #0d1b2a; padding: 0; }
+
+  /* scene */
+  .scene {
+    width: 100%; height: 55vw; max-height: 300px;
+    position: relative; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sky {
+    position: absolute; inset: 0 0 40% 0;
+    background: linear-gradient(180deg, #1a3a5c 0%, #2d6a9f 50%, #FDB97D 100%);
+  }
+  .sun {
+    position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+    width: 50px; height: 50px; border-radius: 50%;
+    background: radial-gradient(circle, #fff9c4 30%, #FFD700 60%, rgba(255,180,0,0) 100%);
+    box-shadow: 0 0 40px 15px rgba(255,215,0,0.3);
+  }
+  /* clouds */
+  .cloud {
+    position: absolute; top: 20%; border-radius: 50px;
+    background: rgba(255,255,255,0.15);
+    animation: cloud-move linear infinite;
+  }
+  .cloud:nth-child(1){ width:80px;height:20px;left:-100px;animation-duration:18s;top:18% }
+  .cloud:nth-child(2){ width:120px;height:25px;left:-150px;animation-duration:25s;top:30%;animation-delay:-10s }
+  .cloud:nth-child(3){ width:60px;height:15px;left:-80px;animation-duration:20s;top:12%;animation-delay:-5s }
+  @keyframes cloud-move { to { transform: translateX(calc(100vw + 200px)); } }
+
+  .ground-strip {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(180deg, #2d5a3d 0%, #1e3d2a 100%);
+  }
+  /* path perspective */
+  .path {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 40px solid transparent;
+    border-right: 40px solid transparent;
+    border-bottom: 120px solid #c4a882;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  }
+  .path::after {
+    content: '';
+    position: absolute; top: 30px; left: -8px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 60px solid rgba(255,255,255,0.2);
+  }
+
+  /* animated feet */
+  .feet-container {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 60px; display: flex; gap: 6px; justify-content: center;
+  }
+  .foot {
+    width: 22px; height: 30px;
+    background: linear-gradient(180deg, #8B6355, #6B4C3E);
+    border-radius: 4px 4px 8px 8px;
+    position: relative;
+  }
+  .foot::after {
+    content: '';
+    position: absolute; bottom: -4px; left: -3px; right: -3px; height: 8px;
+    background: #4a3028;
+    border-radius: 4px;
+  }
+  .foot.left { animation: step-left 0.6s ease-in-out infinite; }
+  .foot.right { animation: step-right 0.6s ease-in-out infinite; }
+  @keyframes step-left {
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-18px) rotate(-8deg)}
+    50%{transform:translateY(0) rotate(0deg)}
+  }
+  @keyframes step-right {
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    75%{transform:translateY(-18px) rotate(8deg)}
+  }
+  .foot.paused { animation-play-state: paused; }
+
+  /* trees */
+  .tree {
+    position: absolute; bottom: 38%;
+    animation: tree-scroll linear infinite;
+  }
+  .tree-trunk { width: 8px; height: 20px; background: #5a3825; margin: 0 auto; border-radius: 2px; }
+  .tree-top { width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-bottom: 28px solid #2d7a3d; margin: 0 auto -8px; }
+  .tree:nth-child(1){ left: 10%; animation-duration: 4s; transform: scale(0.7); }
+  .tree:nth-child(2){ left: 80%; animation-duration: 3.5s; transform: scale(1.1); animation-delay: -1.5s; }
+  .tree:nth-child(3){ left: 30%; animation-duration: 5s; transform: scale(0.5); animation-delay: -2s; }
+  .tree:nth-child(4){ left: 65%; animation-duration: 4.2s; transform: scale(0.9); animation-delay: -0.8s; }
+  @keyframes tree-scroll {
+    0%{transform:translateX(0) scaleX(1)}
+    100%{transform:translateX(-20px) scaleX(1)}
+  }
+  .tree.paused { animation-play-state: paused; }
+
+  /* HUD */
+  .hud {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    width: 100%;
+  }
+  .hud-item { text-align: center; }
+  .hud-val { font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--gold); }
+  .hud-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+  .level-badge {
+    background: linear-gradient(135deg, var(--accent), #e55a27);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 0.75rem; font-weight: 700;
+  }
+
+  /* rhythm zone */
+  .rhythm-area {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 16px 20px;
+    gap: 16px;
+  }
+  .rhythm-prompt {
+    font-size: 0.85rem; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  .beat-track {
+    width: 100%; max-width: 360px; height: 60px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 30px;
+    position: relative; overflow: hidden;
+  }
+  .beat-indicator {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    transition: left 0.1s linear;
+    left: 8px;
+  }
+  .tap-zone {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,107,53,0.15);
+    border: 2px solid rgba(255,107,53,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .tap-zone.hit { background: rgba(255,107,53,0.5); border-color: var(--accent); }
+
+  .tap-btn {
+    width: min(220px, 80vw);
+    height: min(220px, 80vw);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #FF8C5A, #FF6B35 50%, #e55a27);
+    border: none;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow:
+      0 0 0 8px rgba(255,107,53,0.15),
+      0 0 0 16px rgba(255,107,53,0.07),
+      0 10px 40px rgba(255,107,53,0.4);
+    transition: transform 0.08s, box-shadow 0.08s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    overflow: hidden;
+  }
+  .tap-btn::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%);
+    pointer-events: none;
+  }
+  .tap-btn:active, .tap-btn.tapped {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 4px rgba(255,107,53,0.2), 0 4px 20px rgba(255,107,53,0.4);
+  }
+  .tap-icon { font-size: 2.5rem; }
+  .tap-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 2px; }
+
+  /* feedback flash */
+  .feedback {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 2rem; font-weight: 700; pointer-events: none;
+    opacity: 0; transition: opacity 0.1s;
+    font-family: 'Space Mono', monospace;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 100;
+  }
+  .feedback.show { opacity: 1; animation: feedback-pop 0.6s forwards; }
+  @keyframes feedback-pop {
+    0%{opacity:1;transform:translate(-50%,-50%) scale(0.8)}
+    30%{opacity:1;transform:translate(-50%,-60%) scale(1.1)}
+    100%{opacity:0;transform:translate(-50%,-80%) scale(1)}
+  }
+
+  /* progress */
+  .progress-wrap { width: 100%; max-width: 360px; }
+  .progress-row { display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .progress-bg { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--pulse), #87CEEB); border-radius: 4px; transition: width 0.3s ease; }
+
+  /* ── RESULT ── */
+  #result {
+    background: radial-gradient(ellipse at 40% 30%, #1a3a1a 0%, #0d1b0d 70%, #0d1b2a 100%);
+    padding: 40px 30px; text-align: center;
+  }
+  .result-emoji { font-size: 72px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+  .result-title { font-size: 2rem; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+  .result-sub { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 30px; line-height: 1.6; max-width: 300px; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 320px; margin-bottom: 30px; }
+  .result-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 16px 12px;
+  }
+  .result-card .v { font-size: 1.6rem; font-weight: 700; font-family: 'Space Mono', monospace; }
+  .result-card .l { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+  .result-card.accent { border-color: rgba(255,107,53,0.3); background: rgba(255,107,53,0.08); }
+  .result-card.accent .v { color: var(--accent); }
+  .result-card.good .v { color: var(--pulse); }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    padding: 14px 28px; border-radius: 50px; cursor: pointer;
+  }
+
+  /* ── IMAGERY in game ── */
+  .imagery-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(10,26,15,0.97);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 30px; text-align: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .imagery-overlay.active { opacity: 1; pointer-events: all; }
+
+  /* distance indicator */
+  .distance-label {
+    font-size: 0.75rem; color: rgba(255,255,255,0.35);
+    text-align: center; font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* ripple on tap */
+  @keyframes ripple {
+    0%{transform:translate(-50%,-50%) scale(0);opacity:0.6}
+    100%{transform:translate(-50%,-50%) scale(3);opacity:0}
+  }
+  .ripple {
+    position: absolute; width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(255,255,255,0.3); pointer-events: none;
+    animation: ripple 0.5s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div class="screen" id="welcome">
+  <div class="welcome-icon">🚶</div>
+  <div class="welcome-title">Walk With Me</div>
+  <div class="welcome-sub">Tap the rhythm, imagine your legs moving, and keep walking — one step at a time.</div>
+  <button class="start-btn" onclick="startGame()">Let's Walk →</button>
+  <div class="stats-row">
+    <div class="stat-chip">
+      <div class="val" id="best-score-display">0</div>
+      <div class="lbl">Best Score</div>
+    </div>
+    <div class="stat-chip">
+      <div class="val" id="sessions-display">0</div>
+      <div class="lbl">Sessions</div>
+    </div>
+    <div class="stat-chip">
+      <div class="val" id="distance-display">0m</div>
+      <div class="lbl">Total Walk</div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGERY INTRO -->
+<div class="screen hidden" id="imagery">
+  <div class="imagery-pulse">🧠</div>
+  <div class="imagery-title">Before We Walk…</div>
+  <div class="imagery-text" id="imagery-text">
+    Close your eyes. <em>Feel your feet on the ground.</em><br><br>
+    Imagine your left foot lifting… stepping forward… landing. Now your right.<br><br>
+    Your brain is <em>practicing walking right now.</em>
+  </div>
+  <div class="imagery-bar-wrap">
+    <div class="imagery-bar" id="imagery-bar"></div>
+  </div>
+  <button class="imagery-skip" onclick="endImagery()">Skip →</button>
+</div>
+
+<!-- GAME -->
+<div class="screen hidden" id="game">
+  <!-- Scene -->
+  <div class="scene">
+    <div class="sky"></div>
+    <div class="sun"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="ground-strip"></div>
+    <div class="path"></div>
+    <div class="tree"><div class="tree-top"></div><div class="tree-trunk"></div></div>
+    <div class="tree"><div class="tree-top"></div><div class="tree-trunk"></div></div>
+    <div class="tree"><div class="tree-top"></div><div class="tree-trunk"></div></div>
+    <div class="tree"><div class="tree-top"></div><div class="tree-trunk"></div></div>
+    <div class="feet-container">
+      <div class="foot left"></div>
+      <div class="foot right"></div>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-item">
+      <div class="hud-val" id="score-display">0</div>
+      <div class="hud-lbl">Score</div>
+    </div>
+    <div class="level-badge" id="level-display">Level 1</div>
+    <div class="hud-item">
+      <div class="hud-val" id="streak-display">0🔥</div>
+      <div class="hud-lbl">Streak</div>
+    </div>
+  </div>
+
+  <!-- Rhythm area -->
+  <div class="rhythm-area">
+    <div class="rhythm-prompt">Tap in rhythm with the steps</div>
+    <div class="beat-track">
+      <div class="beat-indicator" id="beat-dot">👣</div>
+      <div class="tap-zone" id="tap-zone">🎯</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <span>Progress</span>
+        <span id="steps-count">0 / <span id="steps-target">20</span> steps</span>
+      </div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="distance-label" id="distance-label">0m walked today</div>
+
+    <button class="tap-btn" id="tap-btn" ontouchstart="handleTap(event)" onmousedown="handleTap(event)">
+      <span class="tap-icon">👣</span>
+      <span class="tap-label">Step!</span>
+    </button>
+  </div>
+</div>
+
+<!-- IMAGERY OVERLAY (mid-game) -->
+<div class="imagery-overlay" id="imagery-overlay">
+  <div class="imagery-pulse">✨</div>
+  <div class="imagery-title">Rest Stop</div>
+  <div class="imagery-text">
+    <em>Imagine your legs walking.</em><br><br>
+    Feel the weight shift from heel to toe. The swing of each leg.<br><br>
+    Your motor cortex is firing. <em>Keep believing.</em>
+  </div>
+  <div class="imagery-bar-wrap">
+    <div class="imagery-bar" id="overlay-bar"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen hidden" id="result">
+  <div class="result-emoji" id="result-emoji">🏆</div>
+  <div class="result-title" id="result-title">Great Walk!</div>
+  <div class="result-sub" id="result-sub">Every step you imagine strengthens the pathways in your brain.</div>
+  <div class="result-grid">
+    <div class="result-card accent">
+      <div class="v" id="res-score">0</div>
+      <div class="l">Score</div>
+    </div>
+    <div class="result-card good">
+      <div class="v" id="res-accuracy">0%</div>
+      <div class="l">Accuracy</div>
+    </div>
+    <div class="result-card">
+      <div class="v" id="res-streak">0</div>
+      <div class="l">Best Streak</div>
+    </div>
+    <div class="result-card">
+      <div class="v" id="res-distance">0m</div>
+      <div class="l">Steps Walked</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="start-btn" onclick="startGame()">Walk Again →</button>
+    <button class="btn-secondary" onclick="showScreen('welcome')">Home</button>
+  </div>
+</div>
+
+<!-- Feedback label -->
+<div class="feedback" id="feedback"></div>
+
+<script>
+// ── STATE ──
+const LEVELS = [
+  { name:'Level 1', bpm: 60, target: 20, label:'Gentle Stroll' },
+  { name:'Level 2', bpm: 72, target: 30, label:'Steady Walk' },
+  { name:'Level 3', bpm: 84, target: 40, label:'Brisk Walk' },
+  { name:'Level 4', bpm: 96, target: 50, label:'Power Walk' },
+];
+
+let state = {
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  totalTaps: 0,
+  goodTaps: 0,
+  steps: 0,
+  level: 0,
+  beatInterval: null,
+  beatPos: 0, // 0..1
+  lastBeatTime: 0,
+  beatPeriod: 0,
+  running: false,
+  distanceToday: parseInt(localStorage.getItem('wwm-dist') || '0'),
+  bestScore: parseInt(localStorage.getItem('wwm-best') || '0'),
+  sessions: parseInt(localStorage.getItem('wwm-sessions') || '0'),
+};
+
+// Audio context
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playClick(freq = 440, vol = 0.15, duration = 0.06) {
+  try {
+    const ctx = getAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = freq;
+    o.type = 'sine';
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    o.start(); o.stop(ctx.currentTime + duration);
+  } catch(e){}
+}
+function playGood() { playClick(660, 0.2, 0.08); setTimeout(()=>playClick(880,0.15,0.06),80); }
+function playMiss() { playClick(220, 0.15, 0.1); }
+function playBeat() { playClick(440, 0.08, 0.04); }
+
+// ── SCREENS ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ── WELCOME ──
+function updateWelcome() {
+  document.getElementById('best-score-display').textContent = state.bestScore;
+  document.getElementById('sessions-display').textContent = state.sessions;
+  document.getElementById('distance-display').textContent = state.distanceToday + 'm';
+}
+
+// ── IMAGERY INTRO ──
+function showImagery(callback) {
+  showScreen('imagery');
+  const bar = document.getElementById('imagery-bar');
+  const duration = 12000;
+  const start = Date.now();
+  const tick = () => {
+    const pct = Math.min(100, ((Date.now()-start)/duration)*100);
+    bar.style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(tick);
+    else callback();
+  };
+  requestAnimationFrame(tick);
+}
+
+window._imageryCallback = null;
+document.getElementById('imagery').querySelector('.imagery-skip')
+  .addEventListener('click', () => { if(window._imageryCallback) { window._imageryCallback(); window._imageryCallback=null; } });
+
+function showImageryThen(cb) {
+  window._imageryCallback = cb;
+  showScreen('imagery');
+  const bar = document.getElementById('imagery-bar');
+  bar.style.width = '0%';
+  const duration = 12000;
+  const start = Date.now();
+  const tick = () => {
+    const pct = Math.min(100, ((Date.now()-start)/duration)*100);
+    bar.style.width = pct + '%';
+    if (pct < 100 && window._imageryCallback) requestAnimationFrame(tick);
+    else if(window._imageryCallback) { window._imageryCallback(); window._imageryCallback=null; }
+  };
+  requestAnimationFrame(tick);
+}
+
+// ── START GAME ──
+function startGame() {
+  state.level = 0;
+  state.score = 0;
+  state.streak = 0;
+  state.bestStreak = 0;
+  state.totalTaps = 0;
+  state.goodTaps = 0;
+  state.steps = 0;
+  state.sessions++;
+  localStorage.setItem('wwm-sessions', state.sessions);
+
+  showImageryThen(() => beginLevel());
+}
+
+function beginLevel() {
+  const lvl = LEVELS[state.level];
+  state.beatPeriod = 60000 / lvl.bpm;
+  state.steps = 0;
+  state.running = true;
+
+  document.getElementById('level-display').textContent = lvl.name;
+  document.getElementById('steps-target').textContent = lvl.target;
+  document.getElementById('steps-count').textContent = '0 / ' + lvl.target;
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('score-display').textContent = state.score;
+  document.getElementById('streak-display').textContent = state.streak + '🔥';
+
+  // feet animation speed
+  const fps = lvl.bpm / 60;
+  document.querySelectorAll('.foot').forEach(f => {
+    f.style.animationDuration = (0.6 / fps) + 's';
+    f.classList.remove('paused');
+  });
+  document.querySelectorAll('.tree').forEach(t => t.classList.remove('paused'));
+
+  showScreen('game');
+  runBeatLoop();
+}
+
+// ── BEAT LOOP ──
+let animFrame = null;
+function runBeatLoop() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  state.lastBeatTime = performance.now();
+  const track = document.getElementById('beat-track');
+  const dot = document.getElementById('beat-dot');
+  const trackWidth = track.clientWidth || 340;
+  const dotSize = 44;
+  const travelWidth = trackWidth - dotSize * 2 - 16;
+
+  function loop(now) {
+    if (!state.running) return;
+    const elapsed = now - state.lastBeatTime;
+    const frac = Math.min(elapsed / state.beatPeriod, 1);
+    // ease in-out
+    const eased = frac < 0.5 ? 2*frac*frac : -1+(4-2*frac)*frac;
+    const x = 8 + eased * travelWidth;
+    dot.style.left = x + 'px';
+
+    // beat arrived
+    if (frac >= 1) {
+      state.lastBeatTime = now;
+      playBeat();
+      // flash tap zone
+      const tz = document.getElementById('tap-zone');
+      tz.classList.add('hit');
+      setTimeout(() => tz.classList.remove('hit'), 100);
+    }
+
+    animFrame = requestAnimationFrame(loop);
+  }
+  animFrame = requestAnimationFrame(loop);
+}
+
+// ── TAP HANDLER ──
+function handleTap(e) {
+  e.preventDefault();
+  if (!state.running) return;
+
+  // ripple
+  const btn = document.getElementById('tap-btn');
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  r.style.left = cx + 'px'; r.style.top = cy + 'px';
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 500);
+
+  btn.classList.add('tapped');
+  setTimeout(() => btn.classList.remove('tapped'), 150);
+
+  // timing assessment
+  const now = performance.now();
+  const elapsed = now - state.lastBeatTime;
+  const frac = elapsed / state.beatPeriod;
+  // good window: last 20% or first 20% of beat
+  const inWindow = frac > 0.78 || frac < 0.22;
+
+  state.totalTaps++;
+  if (inWindow) {
+    state.goodTaps++;
+    state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    const pts = state.streak >= 5 ? 20 : state.streak >= 3 ? 15 : 10;
+    state.score += pts;
+    playGood();
+    showFeedback(state.streak >= 5 ? '🔥 Perfect!' : state.streak >= 3 ? '✨ Great!' : '👣 Step!', '#00d4aa');
+  } else {
+    state.streak = 0;
+    state.score = Math.max(0, state.score - 2);
+    playMiss();
+    showFeedback('⏱ Off beat', '#FF6B35');
+  }
+
+  state.steps++;
+  const lvl = LEVELS[state.level];
+  const pct = Math.min(100, (state.steps / lvl.target) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('steps-count').textContent = state.steps + ' / ' + lvl.target;
+  document.getElementById('score-display').textContent = state.score;
+  document.getElementById('streak-display').textContent = state.streak + '🔥';
+  state.distanceToday += 1;
+  localStorage.setItem('wwm-dist', state.distanceToday);
+  document.getElementById('distance-label').textContent = state.distanceToday + 'm walked today';
+
+  if (state.steps >= lvl.target) {
+    levelComplete();
+  }
+}
+
+// ── FEEDBACK ──
+function showFeedback(msg, color) {
+  const el = document.getElementById('feedback');
+  el.textContent = msg;
+  el.style.color = color;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+// ── LEVEL COMPLETE ──
+function levelComplete() {
+  state.running = false;
+  if (animFrame) cancelAnimationFrame(animFrame);
+  document.querySelectorAll('.foot').forEach(f => f.classList.add('paused'));
+
+  if (state.level < LEVELS.length - 1) {
+    // show mid-game imagery then next level
+    showMidImagery(() => {
+      state.level++;
+      beginLevel();
+    });
+  } else {
+    gameOver();
+  }
+}
+
+function showMidImagery(cb) {
+  const overlay = document.getElementById('imagery-overlay');
+  const bar = document.getElementById('overlay-bar');
+  overlay.classList.add('active');
+  bar.style.width = '0%';
+  const dur = 8000;
+  const start = Date.now();
+  const tick = () => {
+    const pct = Math.min(100, ((Date.now()-start)/dur)*100);
+    bar.style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(tick);
+    else { overlay.classList.remove('active'); cb(); }
+  };
+  requestAnimationFrame(tick);
+}
+
+// ── GAME OVER ──
+function gameOver() {
+  if (state.score > state.bestScore) {
+    state.bestScore = state.score;
+    localStorage.setItem('wwm-best', state.bestScore);
+  }
+
+  const accuracy = state.totalTaps > 0 ? Math.round((state.goodTaps/state.totalTaps)*100) : 0;
+  const emojis = accuracy >= 80 ? '🏆' : accuracy >= 60 ? '🌟' : accuracy >= 40 ? '💪' : '🚶';
+  const titles = accuracy >= 80 ? 'Incredible Walk!' : accuracy >= 60 ? 'Great Work!' : accuracy >= 40 ? 'Keep Going!' : 'Nice Effort!';
+  const subs = [
+    'Every tap fires the motor circuits in your brain. Your legs are listening.',
+    'Rhythm and imagination together rewire neural pathways. You did both.',
+    'Science says: motor imagery + rhythm = real brain change. You just did that.',
+    'Each session builds cognitive bridges. One step at a time.',
+  ];
+
+  document.getElementById('result-emoji').textContent = emojis;
+  document.getElementById('result-title').textContent = titles;
+  document.getElementById('result-sub').textContent = subs[Math.floor(Math.random()*subs.length)];
+  document.getElementById('res-score').textContent = state.score;
+  document.getElementById('res-accuracy').textContent = accuracy + '%';
+  document.getElementById('res-streak').textContent = state.bestStreak;
+  document.getElementById('res-distance').textContent = state.distanceToday + 'm';
+
+  showScreen('result');
+  updateWelcome();
+}
+
+// ── INIT ──
+updateWelcome();
+showScreen('welcome');
+</script>
+</body>
+</html>
