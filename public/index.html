@@ -298,7 +298,19 @@ body {
       <span id="listen-icon">🎙</span>
       <span id="listen-lbl">Listen</span>
     </button>
+    <button class="listen-btn" onclick="openVoicePicker()" style="padding:7px 10px;">🔊▾</button>
   </div>
+</div>
+
+<!-- VOICE PICKER OVERLAY -->
+<div class="listen-overlay" id="voice-picker" style="z-index:200;display:none;opacity:1;pointer-events:all;">
+  <div style="font-size:2.5rem">🎙</div>
+  <div class="listen-title">Choose Voice</div>
+  <div class="listen-hint">Select a male voice — look for Daniel, Rishi, or similar</div>
+  <select id="voice-select" style="width:100%;max-width:340px;padding:12px 14px;border-radius:12px;background:#1a2535;color:#F1F5F9;border:1px solid rgba(255,255,255,0.15);font-size:0.95rem;font-family:Nunito,sans-serif;margin:4px 0;"></select>
+  <button class="listen-btn" style="padding:10px 24px;font-size:0.9rem;" onclick="testVoice()">▶ Test This Voice</button>
+  <button class="listen-stop" onclick="saveVoice()">✓ Use This Voice</button>
+  <button class="listen-stop" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);margin-top:4px;" onclick="closeVoicePicker()">Cancel</button>
 </div>
 
 <!-- LAST SPOKEN -->
@@ -327,8 +339,11 @@ body {
     <button class="comm-btn needs" onclick="tap('I need water','எனக்கு தண்ணீர் வேண்டும்')">
       <span class="icon">💧</span><span class="len">Water</span><span class="lta">தண்ணீர்</span>
     </button>
-    <button class="comm-btn needs" onclick="tap('I need to use the bathroom','எனக்கு கழிவறை வேண்டும்')">
-      <span class="icon">🚽</span><span class="len">Bathroom</span><span class="lta">கழிவறை</span>
+    <button class="comm-btn needs" onclick="tap('I need to urinate','எனக்கு சிறுநீர் கழிக்க வேண்டும்')">
+      <span class="icon">🚽</span><span class="len">Need to Pee</span><span class="lta">சிறுநீர் கழிக்கணும்</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I need to pass motion','எனக்கு மலம் கழிக்க வேண்டும்')">
+      <span class="icon">🚻</span><span class="len">Need to Poop</span><span class="lta">மலம் கழிக்கணும்</span>
     </button>
     <button class="comm-btn needs" onclick="tap('I am in pain','எனக்கு வலி இருக்கிறது')">
       <span class="icon">😣</span><span class="len">Pain</span><span class="lta">வலி</span>
@@ -342,8 +357,14 @@ body {
     <button class="comm-btn needs" onclick="tap('I cannot breathe properly','என்னால் சரியாக சுவாசிக்க முடியவில்லை')">
       <span class="icon">😮‍💨</span><span class="len">Hard to Breathe</span><span class="lta">மூச்சு திணறல்</span>
     </button>
-    <button class="comm-btn needs" onclick="tap('I need to rest','எனக்கு ஓய்வு வேண்டும்')">
-      <span class="icon">😴</span><span class="len">Need Rest</span><span class="lta">ஓய்வு வேண்டும்</span>
+    <button class="comm-btn needs" onclick="tap('I want coffee','எனக்கு காபி வேண்டும்')">
+      <span class="icon">☕</span><span class="len">Coffee</span><span class="lta">காபி வேண்டும்</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I want coconut water','எனக்கு இளநீர் வேண்டும்')">
+      <span class="icon">🥥</span><span class="len">Coconut Water</span><span class="lta">இளநீர் வேண்டும்</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I want juice','எனக்கு ஜூஸ் வேண்டும்')">
+      <span class="icon">🧃</span><span class="len">Juice</span><span class="lta">ஜூஸ் வேண்டும்</span>
     </button>
     <button class="comm-btn needs" onclick="tap('I am hungry','எனக்கு பசிக்கிறது')">
       <span class="icon">🍽</span><span class="len">Hungry</span><span class="lta">பசி</span>
@@ -386,14 +407,29 @@ body {
     <button class="comm-btn medical" onclick="tap('My head hurts','என் தலை வலிக்கிறது')">
       <span class="icon">🤕</span><span class="len">Headache</span><span class="lta">தலைவலி</span>
     </button>
-    <button class="comm-btn medical" onclick="tap('I feel nauseous','எனக்கு குமட்டல் வருகிறது')">
-      <span class="icon">🤢</span><span class="len">Nauseous</span><span class="lta">குமட்டல்</span>
+    <button class="comm-btn medical" onclick="tap('I have pain in my neck','என் கழுத்தில் வலி இருக்கிறது')">
+      <span class="icon">🦴</span><span class="len">Neck Pain</span><span class="lta">கழுத்து வலி</span>
     </button>
     <button class="comm-btn medical" onclick="tap('Please suction','சக்‌ஷன் செய்யுங்கள்')">
       <span class="icon">🌬</span><span class="len">Suction Please</span><span class="lta">சக்‌ஷன் செய்யுங்கள்</span>
     </button>
-    <button class="comm-btn medical" onclick="tap('I cannot feel my legs','என் கால்களில் உணர்வு இல்லை')">
-      <span class="icon">🦵</span><span class="len">No Leg Feeling</span><span class="lta">கால் உணர்வு இல்லை</span>
+    <button class="comm-btn needs" onclick="tap('I can feel sensation in my legs','என் கால்களில் உணர்வு தெரிகிறது')">
+      <span class="icon">✨</span><span class="len">Feeling in Legs</span><span class="lta">கால்களில் உணர்வு</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I can feel sensation in my left leg','என் இடது காலில் உணர்வு தெரிகிறது')">
+      <span class="icon">🦵</span><span class="len">Left Leg Sensation</span><span class="lta">இடது கால் உணர்வு</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I can feel sensation in my right leg','என் வலது காலில் உணர்வு தெரிகிறது')">
+      <span class="icon">🦵</span><span class="len">Right Leg Sensation</span><span class="lta">வலது கால் உணர்வு</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I can feel sensation in my feet','என் பாதங்களில் உணர்வு தெரிகிறது')">
+      <span class="icon">👣</span><span class="len">Feeling in Feet</span><span class="lta">பாதங்களில் உணர்வு</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('I can feel tingling in my legs','என் கால்களில் சிலிர்ப்பு தெரிகிறது')">
+      <span class="icon">⚡</span><span class="len">Tingling in Legs</span><span class="lta">கால்களில் சிலிர்ப்பு</span>
+    </button>
+    <button class="comm-btn needs" onclick="tap('My legs feel warm','என் கால்களில் வெப்பம் தெரிகிறது')">
+      <span class="icon">🌡</span><span class="len">Legs Feel Warm</span><span class="lta">கால்களில் வெப்பம்</span>
     </button>
   </div>
 
@@ -441,6 +477,9 @@ body {
   <div class="btn-grid hidden" id="grid-family">
     <button class="comm-btn family" onclick="tap('Where is Hari?','ஹரி எங்கே?')">
       <span class="icon">👦</span><span class="len">Where is Hari?</span><span class="lta">ஹரி எங்கே?</span>
+    </button>
+    <button class="comm-btn family" onclick="tap('Where is Vimala?','விமலா எங்கே?')">
+      <span class="icon">👩</span><span class="len">Where is Vimala?</span><span class="lta">விமலா எங்கே?</span>
     </button>
     <button class="comm-btn family" onclick="tap('Please hold my hand','என் கையை பிடியுங்கள்')">
       <span class="icon">🤝</span><span class="len">Hold My Hand</span><span class="lta">கை பிடியுங்கள்</span>
@@ -588,14 +627,17 @@ function tts(text, langCode) {
   u.lang = langCode || 'en-IN';
   u.rate = 0.88; u.volume = 1; u.pitch = 0.9;
   const voices = window.speechSynthesis.getVoices();
+  // use manually selected voice first
+  if (selectedVoice) {
+    const v = voices.find(x => x.name === selectedVoice);
+    if (v) { u.voice = v; window.speechSynthesis.speak(u); return; }
+  }
+  // auto-pick male
   const prefix = langCode ? langCode.slice(0,2) : 'en';
-  // prefer male voices — look for common male voice names
-  const maleKeywords = ['male','man','daniel','david','rishi','mohan','kumar','raj','aaron','guy','fred','alex','bruce','lee'];
+  const maleKw = ['male','man','daniel','david','rishi','mohan','kumar','raj','aaron','guy','fred','alex','bruce','lee'];
   const langVoices = voices.filter(x => x.lang.startsWith(prefix));
-  const maleVoice = langVoices.find(v => maleKeywords.some(k => v.name.toLowerCase().includes(k)));
-  const anyLangVoice = langVoices[0];
-  const fallback = voices.find(x => x.lang.startsWith('en'));
-  u.voice = maleVoice || anyLangVoice || fallback || null;
+  const maleVoice = langVoices.find(v => maleKw.some(k => v.name.toLowerCase().includes(k)));
+  u.voice = maleVoice || langVoices[0] || voices.find(x => x.lang.startsWith('en')) || null;
   window.speechSynthesis.speak(u);
 }
 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -748,8 +790,74 @@ function speakCustom() {
 document.getElementById('custom-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') speakCustom();
 });
+// ─── VOICE PICKER ────────────────────────────────────────
+let selectedVoice = null;
+
+function populateVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('voice-select');
+  sel.innerHTML = '';
+  // sort: male-sounding names first
+  const maleKw = ['male','man','daniel','david','rishi','mohan','kumar','raj','aaron','guy','fred','alex','bruce','lee','oliver','thomas','mark'];
+  const sorted = [...voices].sort((a,b) => {
+    const am = maleKw.some(k => a.name.toLowerCase().includes(k)) ? 0 : 1;
+    const bm = maleKw.some(k => b.name.toLowerCase().includes(k)) ? 0 : 1;
+    return am - bm;
+  });
+  sorted.forEach((v, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    const isMale = maleKw.some(k => v.name.toLowerCase().includes(k));
+    o.textContent = (isMale ? '♂ ' : '♀ ') + v.name + ' (' + v.lang + ')';
+    o.dataset.name = v.name;
+    sel.appendChild(o);
+  });
+  // auto-select first male-looking voice
+  const firstMale = sorted.findIndex(v => maleKw.some(k => v.name.toLowerCase().includes(k)));
+  if (firstMale >= 0) sel.selectedIndex = firstMale;
+}
+
+function openVoicePicker() {
+  populateVoices();
+  document.getElementById('voice-picker').style.display = 'flex';
+}
+function closeVoicePicker() {
+  document.getElementById('voice-picker').style.display = 'none';
+}
+function testVoice() {
+  const sel = document.getElementById('voice-select');
+  const name = sel.options[sel.selectedIndex]?.dataset?.name;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(x => x.name === name);
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance('Hello, I am speaking with this voice. Testing one two three.');
+  u.voice = v || null;
+  u.rate = 0.88; u.pitch = 0.9; u.volume = 1;
+  window.speechSynthesis.speak(u);
+}
+function saveVoice() {
+  const sel = document.getElementById('voice-select');
+  const name = sel.options[sel.selectedIndex]?.dataset?.name;
+  selectedVoice = name;
+  localStorage.setItem('ttt-voice', name);
+  closeVoicePicker();
+  // confirm
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(x => x.name === name);
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance('Voice set. Ready to speak.');
+  u.voice = v || null; u.rate = 0.88; u.pitch = 0.9;
+  window.speechSynthesis.speak(u);
+}
+
+window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.getVoices();
+  // restore saved voice
+  const saved = localStorage.getItem('ttt-voice');
+  if (saved) selectedVoice = saved;
+};
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeSugg(); closeCustom(); stopListen(); }
+  if (e.key === 'Escape') { closeSugg(); closeCustom(); stopListen(); closeVoicePicker(); }
 });
 </script>
 </body>
