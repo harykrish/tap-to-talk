@@ -980,34 +980,16 @@ async function speakCanvas() {
     const dataUrl = canvasEl.toDataURL('image/png');
     const base64  = dataUrl.split(',')[1];
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/ocr', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: 'image/png', data: base64 }
-            },
-            {
-              type: 'text',
-              text: `This is a handwritten message from a patient in the ICU who cannot speak. He has a spinal injury and is using his finger to write on a touchscreen — his handwriting may be shaky, partial, or hard to read. 
-
-Please do your absolute best to read what he has written. Return ONLY the text you can read, or your best interpretation. If you genuinely cannot make out anything, say "I could not read this clearly". Keep it short. Do not explain or add commentary — just the words he wrote.`
-            }
-          ]
-        }]
-      })
+      body: JSON.stringify({ imageBase64: base64 })
     });
 
     const data = await resp.json();
-    const text = data?.content?.[0]?.text?.trim() || '';
+    const text = data?.text?.trim() || 'UNCLEAR';
 
-    if (text && text.toLowerCase() !== 'i could not read this clearly') {
+    if (text && text !== 'UNCLEAR') {
       el.textContent = `"${text}"`;
       document.getElementById('again-btn').style.display = 'block';
       lastEn = text; lastTa = text;
