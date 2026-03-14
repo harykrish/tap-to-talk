@@ -603,8 +603,8 @@ body {
 
   <!-- SPEAK BUTTONS AT TOP — always visible -->
   <div style="display:flex;gap:8px;padding:8px 14px;flex-shrink:0;">
-    <button class="canvas-btn" style="background:#6366f1;color:white;font-size:0.95rem;min-height:60px;flex:1;" onclick="speakCanvasDirect()">🔊 Speak This Aloud</button>
-    <button class="canvas-btn speak" id="ai-read-btn" style="min-height:60px;flex:1;" onclick="speakCanvas()">🤖 AI Read Writing</button>
+    <button class="canvas-btn" style="background:#6366f1;color:white;font-size:0.95rem;min-height:60px;flex:1;" onclick="speakCanvasDirect()">📣 Get Attention</button>
+    <button class="canvas-btn speak" id="ai-read-btn" style="min-height:60px;flex:1;" onclick="speakCanvas()">👁 Read My Writing</button>
   </div>
 
   <!-- CANVAS fills remaining space -->
@@ -1029,7 +1029,7 @@ function openCanvas() {
   setTimeout(() => {
     initCanvas();
     const btn = document.getElementById('ai-read-btn');
-    if (btn) btn.textContent = navigator.onLine ? '🤖 AI Read Writing' : '🤖 AI Read (no wifi)';
+    if (btn) btn.textContent = navigator.onLine ? '👁 Read My Writing' : '👁 Read My Writing (no wifi)';
   }, 100);
 }
 
