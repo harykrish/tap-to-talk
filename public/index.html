@@ -126,21 +126,21 @@ body {
 .comm-btn {
   background: var(--surface);
   border: 2px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 10px;
+  border-radius: 20px;
+  padding: 18px 10px;
   cursor:pointer;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  gap:6px; min-height:85px;
+  gap:8px; min-height:110px;
   transition: transform 0.1s, border-color 0.15s, background 0.15s;
   position:relative; overflow:hidden;
   -webkit-tap-highlight-color: transparent;
 }
 .comm-btn:active { transform:scale(0.93); }
 
-.comm-btn .icon { font-size:1.8rem; line-height:1; }
-.comm-btn .len { font-size:0.88rem; font-weight:800; color:var(--text); text-align:center; line-height:1.2; }
-.comm-btn .lta { font-size:0.76rem; font-weight:600; color:var(--text-dim); text-align:center; line-height:1.3; margin-top:1px; }
+.comm-btn .icon { font-size:2.4rem; line-height:1; }
+.comm-btn .len { font-size:1rem; font-weight:800; color:var(--text); text-align:center; line-height:1.2; }
+.comm-btn .lta { font-size:0.82rem; font-weight:600; color:var(--text-dim); text-align:center; line-height:1.3; margin-top:1px; }
 
 .comm-btn.needs { border-color:rgba(45,212,191,0.2); }
 .comm-btn.needs:active { border-color:var(--accent); background:rgba(45,212,191,0.08); }
@@ -348,15 +348,6 @@ body {
     <button class="comm-btn needs" onclick="tap('I am in pain','எனக்கு வலி இருக்கிறது')">
       <span class="icon">😣</span><span class="len">Pain</span><span class="lta">வலி</span>
     </button>
-    <button class="comm-btn needs" onclick="tap('I am cold','எனக்கு குளிராக இருக்கிறது')">
-      <span class="icon">🥶</span><span class="len">Cold</span><span class="lta">குளிர்</span>
-    </button>
-    <button class="comm-btn needs" onclick="tap('I am hot','எனக்கு சூடாக இருக்கிறது')">
-      <span class="icon">🥵</span><span class="len">Hot / Fever</span><span class="lta">சூடு / காய்ச்சல்</span>
-    </button>
-    <button class="comm-btn needs" onclick="tap('I cannot breathe properly','என்னால் சரியாக சுவாசிக்க முடியவில்லை')">
-      <span class="icon">😮‍💨</span><span class="len">Hard to Breathe</span><span class="lta">மூச்சு திணறல்</span>
-    </button>
     <button class="comm-btn needs" onclick="tap('I want coffee','எனக்கு காபி வேண்டும்')">
       <span class="icon">☕</span><span class="len">Coffee</span><span class="lta">காபி வேண்டும்</span>
     </button>
@@ -404,14 +395,8 @@ body {
     <button class="comm-btn medical" onclick="tap('My back hurts','என் முதுகு வலிக்கிறது')">
       <span class="icon">🔙</span><span class="len">Back Hurts</span><span class="lta">முதுகு வலி</span>
     </button>
-    <button class="comm-btn medical" onclick="tap('My head hurts','என் தலை வலிக்கிறது')">
-      <span class="icon">🤕</span><span class="len">Headache</span><span class="lta">தலைவலி</span>
-    </button>
     <button class="comm-btn medical" onclick="tap('I have pain in my neck','என் கழுத்தில் வலி இருக்கிறது')">
       <span class="icon">🦴</span><span class="len">Neck Pain</span><span class="lta">கழுத்து வலி</span>
-    </button>
-    <button class="comm-btn medical" onclick="tap('Please suction','சக்‌ஷன் செய்யுங்கள்')">
-      <span class="icon">🌬</span><span class="len">Suction Please</span><span class="lta">சக்‌ஷன் செய்யுங்கள்</span>
     </button>
     <button class="comm-btn needs" onclick="tap('I can feel sensation in my legs','என் கால்களில் உணர்வு தெரிகிறது')">
       <span class="icon">✨</span><span class="len">Feeling in Legs</span><span class="lta">கால்களில் உணர்வு</span>
@@ -428,9 +413,6 @@ body {
     <button class="comm-btn needs" onclick="tap('I can feel tingling in my legs','என் கால்களில் சிலிர்ப்பு தெரிகிறது')">
       <span class="icon">⚡</span><span class="len">Tingling in Legs</span><span class="lta">கால்களில் சிலிர்ப்பு</span>
     </button>
-    <button class="comm-btn needs" onclick="tap('My legs feel warm','என் கால்களில் வெப்பம் தெரிகிறது')">
-      <span class="icon">🌡</span><span class="len">Legs Feel Warm</span><span class="lta">கால்களில் வெப்பம்</span>
-    </button>
   </div>
 
   <!-- FEELINGS -->
@@ -441,29 +423,17 @@ body {
     <button class="comm-btn emotion" onclick="tap('Thank you','நன்றி')">
       <span class="icon">🙏</span><span class="len">Thank You</span><span class="lta">நன்றி</span>
     </button>
-    <button class="comm-btn emotion" onclick="tap('I am scared','எனக்கு பயமாக இருக்கிறது')">
-      <span class="icon">😨</span><span class="len">Scared</span><span class="lta">பயம்</span>
-    </button>
     <button class="comm-btn emotion" onclick="tap('I am feeling better today','இன்று நான் நலமாக உணர்கிறேன்')">
       <span class="icon">🌤</span><span class="len">Feeling Better</span><span class="lta">நலமாக உணர்கிறேன்</span>
     </button>
-    <button class="comm-btn emotion" onclick="tap('I am worried','நான் கவலைப்படுகிறேன்')">
-      <span class="icon">😟</span><span class="len">Worried</span><span class="lta">கவலை</span>
-    </button>
     <button class="comm-btn emotion" onclick="tap('I am happy','நான் மகிழ்ச்சியாக இருக்கிறேன்')">
       <span class="icon">😊</span><span class="len">Happy</span><span class="lta">மகிழ்ச்சி</span>
-    </button>
-    <button class="comm-btn emotion" onclick="tap('I am frustrated','எனக்கு எரிச்சலாக இருக்கிறது')">
-      <span class="icon">😤</span><span class="len">Frustrated</span><span class="lta">எரிச்சல்</span>
     </button>
     <button class="comm-btn emotion" onclick="tap('I am bored','எனக்கு சலிப்பாக இருக்கிறது')">
       <span class="icon">😑</span><span class="len">Bored</span><span class="lta">சலிப்பு</span>
     </button>
     <button class="comm-btn emotion" onclick="tap('I will be okay. Do not worry','நான் சரியாவேன். கவலைப்படாதீர்கள்')">
       <span class="icon">🌟</span><span class="len">I Will Be Okay</span><span class="lta">நான் சரியாவேன்</span>
-    </button>
-    <button class="comm-btn emotion" onclick="tap('I miss you','நான் உன்னை மிகவும் நினைக்கிறேன்')">
-      <span class="icon">🥺</span><span class="len">I Miss You</span><span class="lta">நினைக்கிறேன்</span>
     </button>
     <button class="comm-btn emotion" onclick="tap('I am proud of myself','நான் வலிமையாக இருக்கிறேன்')">
       <span class="icon">💪</span><span class="len">Feeling Strong</span><span class="lta">வலிமையாக இருக்கிறேன்</span>
@@ -493,14 +463,14 @@ body {
     <button class="comm-btn family" onclick="tap('I want to listen to music','இசை கேட்க வேண்டும்')">
       <span class="icon">🎵</span><span class="len">Play Music</span><span class="lta">இசை போடுங்கள்</span>
     </button>
-    <button class="comm-btn family" onclick="tap('I want to watch TV','தொலைக்காட்சி பார்க்க வேண்டும்')">
-      <span class="icon">📺</span><span class="len">Watch TV</span><span class="lta">டிவி பாக்கணும்</span>
+    <button class="comm-btn family" onclick="tap('How is work going?','வேலை எப்படி போகிறது?')">
+      <span class="icon">💼</span><span class="len">How is Work?</span><span class="lta">வேலை எப்படி?</span>
+    </button>
+    <button class="comm-btn family" onclick="tap('Tell me more about cricket','கிரிக்கெட் பத்தி சொல்லுங்கள்')">
+      <span class="icon">🏏</span><span class="len">Tell Me Cricket</span><span class="lta">கிரிக்கெட் சொல்லுங்கள்</span>
     </button>
     <button class="comm-btn family" onclick="tap('How is everyone at home?','வீட்டில் எல்லாரும் எப்படி இருக்கிறார்கள்?')">
       <span class="icon">🏠</span><span class="len">How is Home?</span><span class="lta">வீட்டில் எப்படி?</span>
-    </button>
-    <button class="comm-btn family" onclick="tap('Please pray for me','என்னுடைய நலனுக்காக பிரார்த்தனை செய்யுங்கள்')">
-      <span class="icon">🛐</span><span class="len">Please Pray</span><span class="lta">பிரார்த்தனை செய்யுங்கள்</span>
     </button>
     <button class="comm-btn family" onclick="tap('I am getting better every day','நான் ஒவ்வொரு நாளும் நலமடைகிறேன்')">
       <span class="icon">📈</span><span class="len">Getting Better</span><span class="lta">நலமடைகிறேன்</span>
