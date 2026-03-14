@@ -596,24 +596,28 @@ body {
   <div class="canvas-head">
     <div>
       <div class="canvas-title">✍️ Write with Finger</div>
-      <div class="canvas-sub">விரலால் எழுதுங்கள் — Write anything, saved automatically</div>
+      <div class="canvas-sub">விரலால் எழுதுங்கள்</div>
     </div>
     <button class="canvas-btn close" style="flex:0;min-width:auto;padding:8px 12px;" onclick="closeCanvas()">✕</button>
   </div>
-  <div id="writings-log"></div>
+
+  <!-- SPEAK BUTTONS AT TOP — always visible -->
+  <div style="display:flex;gap:8px;padding:8px 14px;flex-shrink:0;">
+    <button class="canvas-btn" style="background:#6366f1;color:white;font-size:0.95rem;min-height:60px;flex:1;" onclick="speakCanvasDirect()">🔊 Speak This Aloud</button>
+    <button class="canvas-btn speak" id="ai-read-btn" style="min-height:60px;flex:1;" onclick="speakCanvas()">🤖 AI Read Writing</button>
+  </div>
+
+  <!-- CANVAS fills remaining space -->
   <canvas id="write-canvas"></canvas>
+
+  <!-- BOTTOM ROW: brush size + clear only -->
   <div class="canvas-tools">
     <div class="canvas-size">
       <div class="size-dot active" style="width:8px;height:8px;" onclick="setBrush(3,this)"></div>
       <div class="size-dot" style="width:14px;height:14px;" onclick="setBrush(7,this)"></div>
       <div class="size-dot" style="width:20px;height:20px;" onclick="setBrush(13,this)"></div>
     </div>
-    <button class="canvas-btn clear" onclick="clearCanvas()">🗑 Clear</button>
-    <button class="canvas-btn save" onclick="saveWriting()">💾 Save</button>
-  </div>
-  <div class="canvas-tools" style="padding-top:0;">
-    <button class="canvas-btn" style="background:#6366f1;color:white;font-size:1rem;min-height:56px;" onclick="speakCanvasDirect()">🔊 Speak This Aloud</button>
-    <button class="canvas-btn speak" id="ai-read-btn" style="min-height:56px;" onclick="speakCanvas()">🤖 AI Read Writing</button>
+    <button class="canvas-btn clear" style="flex:1;" onclick="clearCanvas()">🗑 Clear & Write Again</button>
   </div>
 </div>
 
@@ -858,12 +862,12 @@ const ctx = canvasEl.getContext('2d');
 
 function initCanvas() {
   const panel = document.getElementById('canvas-panel');
-  const head  = panel.querySelector('.canvas-head');
-  const tools = panel.querySelector('.canvas-tools');
-  const log   = document.getElementById('writings-log');
-  const avail = window.innerHeight - head.offsetHeight - tools.offsetHeight - log.offsetHeight;
+  const head   = panel.querySelector('.canvas-head');
+  const speakRow = panel.querySelector('div[style*="speak buttons"]') || panel.children[1];
+  const tools  = panel.querySelector('.canvas-tools');
+  const usedH  = head.offsetHeight + 76 + tools.offsetHeight + 16; // 76 = speak buttons row
   canvasEl.width  = window.innerWidth;
-  canvasEl.height = Math.max(avail, 200);
+  canvasEl.height = Math.max(window.innerHeight - usedH, 250);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
   ctx.strokeStyle = '#1a1a2e';
@@ -1024,8 +1028,6 @@ function openCanvas() {
   document.getElementById('canvas-panel').classList.add('active');
   setTimeout(() => {
     initCanvas();
-    renderWritingsLog();
-    // Show wifi status on read button
     const btn = document.getElementById('ai-read-btn');
     if (btn) btn.textContent = navigator.onLine ? '🤖 AI Read Writing' : '🤖 AI Read (no wifi)';
   }, 100);
