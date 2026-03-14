@@ -856,6 +856,8 @@ document.getElementById('custom-input').addEventListener('keydown', e => {
 let drawing = false;
 let brushSize = 3;
 let writings = [];
+let lastOcrResult = null;   // cached result
+let canvasDirty = false;    // true when canvas changed since last OCR
 
 const canvasEl = document.getElementById('write-canvas');
 const ctx = canvasEl.getContext('2d');
@@ -883,10 +885,10 @@ function getPos(e) {
 }
 
 canvasEl.addEventListener('mousedown',  e => { drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
-canvasEl.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+canvasEl.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); canvasDirty=true; });
 canvasEl.addEventListener('mouseup',    () => drawing=false);
 canvasEl.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
-canvasEl.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+canvasEl.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); canvasDirty=true; }, {passive:false});
 canvasEl.addEventListener('touchend',   () => drawing=false);
 
 function setBrush(size, el) {
@@ -899,6 +901,10 @@ function setBrush(size, el) {
 function clearCanvas() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+  lastOcrResult = null;
+  canvasDirty = false;
+  const btn = document.getElementById('ai-read-btn');
+  if (btn) btn.textContent = navigator.onLine ? '👁 Read My Writing' : '👁 Read My Writing (no wifi)';
 }
 
 function saveWriting() {
@@ -974,6 +980,16 @@ async function speakCanvas() {
   const hasMarks = Array.from(imgData.data).some((v, i) => i%4 !== 3 && v < 240);
   if (!hasMarks) { tts('Please write something first', 'en-IN'); return; }
 
+  // Use cached result if canvas hasn't changed
+  if (lastOcrResult && !canvasDirty) {
+    const el = document.getElementById('last-text');
+    el.textContent = `"${lastOcrResult}"`;
+    document.getElementById('again-btn').style.display = 'block';
+    lastEn = lastOcrResult; lastTa = lastOcrResult;
+    tts(lastOcrResult, lang === 'ta' ? 'ta-IN' : 'en-IN');
+    return;
+  }
+
   // If offline, skip OCR entirely
   if (!navigator.onLine) {
     const el = document.getElementById('last-text');
@@ -1010,6 +1026,10 @@ async function speakCanvas() {
       el.textContent = `"${text}"`;
       document.getElementById('again-btn').style.display = 'block';
       lastEn = text; lastTa = text;
+      lastOcrResult = text;
+      canvasDirty = false;
+      const btn2 = document.getElementById('ai-read-btn');
+      if (btn2) btn2.textContent = '👁 Read Again';
       tts(text, lang === 'ta' ? 'ta-IN' : 'en-IN');
     } else {
       el.textContent = 'Could not read clearly — please try again';
