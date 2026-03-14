@@ -610,7 +610,10 @@ body {
     </div>
     <button class="canvas-btn clear" onclick="clearCanvas()">🗑 Clear</button>
     <button class="canvas-btn save" onclick="saveWriting()">💾 Save</button>
-    <button class="canvas-btn speak" onclick="speakCanvas()">🔊 Read Aloud</button>
+  </div>
+  <div class="canvas-tools" style="padding-top:0;">
+    <button class="canvas-btn" style="background:#6366f1;color:white;font-size:1rem;min-height:56px;" onclick="speakCanvasDirect()">🔊 Speak This Aloud</button>
+    <button class="canvas-btn speak" id="ai-read-btn" style="min-height:56px;" onclick="speakCanvas()">🤖 AI Read Writing</button>
   </div>
 </div>
 
@@ -951,6 +954,16 @@ function loadWriting(dataUrl) {
   image.src = dataUrl;
 }
 
+function speakCanvasDirect() {
+  // Just announce and show the canvas — nurse/family looks at screen
+  const el = document.getElementById('last-text');
+  el.textContent = 'I have written something — please look at my screen';
+  document.getElementById('again-btn').style.display = 'block';
+  lastEn = 'I have written something. Please look at my screen.';
+  lastTa = 'நான் ஏதோ எழுதியிருக்கிறேன். என் திரையை பாருங்கள்.';
+  tts(lang === 'ta' ? lastTa : lastEn, lang === 'ta' ? 'ta-IN' : 'en-IN');
+}
+
 async function speakCanvas() {
   // Check canvas has marks
   const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
@@ -967,7 +980,7 @@ async function speakCanvas() {
   }
 
   // Update button to show loading
-  const btn = document.querySelector('.canvas-btn.speak');
+  const btn = document.getElementById('ai-read-btn');
   const orig = btn.textContent;
   btn.textContent = '⏳ Reading…';
   btn.disabled = true;
@@ -1013,8 +1026,8 @@ function openCanvas() {
     initCanvas();
     renderWritingsLog();
     // Show wifi status on read button
-    const btn = document.querySelector('.canvas-btn.speak');
-    if (btn) btn.textContent = navigator.onLine ? '🔊 Read Aloud (AI)' : '🔊 Read Aloud (no wifi)';
+    const btn = document.getElementById('ai-read-btn');
+    if (btn) btn.textContent = navigator.onLine ? '🤖 AI Read Writing' : '🤖 AI Read (no wifi)';
   }, 100);
 }
 
