@@ -274,6 +274,69 @@ body {
   padding:14px; border-radius:12px; cursor:pointer;
 }
 
+/* ── CANVAS PANEL ── */
+#canvas-panel {
+  position:fixed; inset:0; z-index:96;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
+}
+#canvas-panel.active { transform:translateY(0); }
+.canvas-head {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 16px; border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.canvas-title { font-size:1rem; font-weight:900; color:var(--text); }
+.canvas-sub { font-size:0.7rem; color:var(--text-dim); margin-top:2px; }
+#write-canvas {
+  flex:1; width:100%; cursor:crosshair;
+  background:#fff; display:block;
+  touch-action:none;
+}
+.canvas-tools {
+  display:flex; gap:8px; padding:10px 14px;
+  border-top:1px solid var(--border);
+  flex-shrink:0; align-items:center;
+  flex-wrap:wrap;
+}
+.canvas-btn {
+  padding:10px 16px; border-radius:12px; border:none;
+  font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800;
+  cursor:pointer; flex:1; min-width:70px;
+}
+.canvas-btn.clear { background:var(--surface2); color:var(--text-dim); }
+.canvas-btn.save  { background:#22c55e; color:#fff; }
+.canvas-btn.speak { background:var(--accent); color:#000; }
+.canvas-btn.close { background:transparent; border:1px solid var(--border); color:var(--text-dim); }
+.canvas-size {
+  display:flex; gap:4px; align-items:center;
+}
+.size-dot {
+  border-radius:50%; background:var(--text); cursor:pointer;
+  border:2px solid transparent; transition:border-color 0.15s;
+}
+.size-dot.active { border-color:var(--accent); }
+
+/* Saved writings log */
+#writings-log {
+  max-height:120px; overflow-y:auto;
+  padding:0 14px 8px; display:flex; flex-direction:column; gap:6px;
+  flex-shrink:0;
+}
+.writing-entry {
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface2); border-radius:10px; padding:6px 10px;
+  font-size:0.75rem; color:var(--text-dim);
+}
+.writing-thumb {
+  width:48px; height:28px; border-radius:6px;
+  border:1px solid var(--border); flex-shrink:0;
+  object-fit:contain; background:#fff;
+}
+.writing-time { flex:1; }
+.writing-del { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:0.85rem; padding:2px 4px; }
+
 /* ── WALK LINK ── */
 .walk-link {
   position:fixed; bottom:16px; right:16px; z-index:50;
@@ -325,7 +388,7 @@ body {
   <button class="tab" onclick="setTab('medical',this)">🏥 Medical</button>
   <button class="tab" onclick="setTab('emotion',this)">💛 Feelings</button>
   <button class="tab" onclick="setTab('family',this)">👨‍👩‍👧 Family</button>
-  <button class="tab" onclick="setTab('custom',this)">✏️ Type</button>
+  <button class="tab" onclick="setTab('custom',this)">✍️ Write</button>
 </div>
 
 <!-- GRIDS -->
@@ -377,8 +440,6 @@ body {
     <button class="comm-btn medical" onclick="tap('Call the nurse please','நர்ஸை அழையுங்கள்')">
       <span class="icon">👩‍⚕️</span><span class="len">Call Nurse</span><span class="lta">நர்ஸை அழையுங்கள்</span>
     </button>
-    <button class="comm-btn medical" onclick="tap('I need my medicine','எனக்கு மருந்து வேண்டும்')">
-      <span class="icon">💊</span><span class="len">Medicine</span><span class="lta">மருந்து</span>
     </button>
     <button class="comm-btn medical" onclick="tap('Yes','ஆமாம்')">
       <span class="icon">✅</span><span class="len">YES</span><span class="lta">ஆமாம்</span>
@@ -481,16 +542,16 @@ body {
   </div>
 
   <!-- CUSTOM -->
-  <div class="btn-grid hidden" id="grid-custom" style="grid-template-columns:1fr;">
+  <div class="btn-grid hidden" id="grid-custom" style="grid-template-columns:1fr 1fr;">
     <button class="comm-btn family" style="min-height:110px;" onclick="openCustom()">
-      <span class="icon">✏️</span>
-      <span class="len">Type anything to speak</span>
-      <span class="lta">எதையும் தட்டச்சு செய்யுங்கள்</span>
+      <span class="icon">⌨️</span>
+      <span class="len">Type to Speak</span>
+      <span class="lta">தட்டச்சு செய்யுங்கள்</span>
     </button>
-    <button class="comm-btn needs" style="min-height:80px;" onclick="tap('I want to say something important','நான் ஒரு முக்கியமான விஷயம் சொல்ல வேண்டும்')">
-      <span class="icon">❗</span>
-      <span class="len">Important Message</span>
-      <span class="lta">முக்கியமான விஷயம்</span>
+    <button class="comm-btn needs" style="min-height:110px;" onclick="openCanvas()">
+      <span class="icon">✍️</span>
+      <span class="len">Write with Finger</span>
+      <span class="lta">விரலால் எழுதுங்கள்</span>
     </button>
   </div>
 
@@ -528,6 +589,29 @@ body {
   </div>
   <input class="custom-input" id="custom-input" placeholder="Type message here…" />
   <button class="custom-go" onclick="speakCustom()">🔊 Speak This</button>
+</div>
+
+<!-- CANVAS PANEL -->
+<div id="canvas-panel">
+  <div class="canvas-head">
+    <div>
+      <div class="canvas-title">✍️ Write with Finger</div>
+      <div class="canvas-sub">விரலால் எழுதுங்கள் — Write anything, saved automatically</div>
+    </div>
+    <button class="canvas-btn close" style="flex:0;min-width:auto;padding:8px 12px;" onclick="closeCanvas()">✕</button>
+  </div>
+  <div id="writings-log"></div>
+  <canvas id="write-canvas"></canvas>
+  <div class="canvas-tools">
+    <div class="canvas-size">
+      <div class="size-dot active" style="width:8px;height:8px;" onclick="setBrush(3,this)"></div>
+      <div class="size-dot" style="width:14px;height:14px;" onclick="setBrush(7,this)"></div>
+      <div class="size-dot" style="width:20px;height:20px;" onclick="setBrush(13,this)"></div>
+    </div>
+    <button class="canvas-btn clear" onclick="clearCanvas()">🗑 Clear</button>
+    <button class="canvas-btn save" onclick="saveWriting()">💾 Save</button>
+    <button class="canvas-btn speak" onclick="speakCanvas()">🔊 Read Aloud</button>
+  </div>
 </div>
 
 <script>
@@ -760,6 +844,202 @@ function speakCustom() {
 document.getElementById('custom-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') speakCustom();
 });
+
+// ─── CANVAS / WRITE ──────────────────────────────────────
+let drawing = false;
+let brushSize = 3;
+let writings = [];
+
+const canvasEl = document.getElementById('write-canvas');
+const ctx = canvasEl.getContext('2d');
+
+function initCanvas() {
+  const panel = document.getElementById('canvas-panel');
+  const head  = panel.querySelector('.canvas-head');
+  const tools = panel.querySelector('.canvas-tools');
+  const log   = document.getElementById('writings-log');
+  const avail = window.innerHeight - head.offsetHeight - tools.offsetHeight - log.offsetHeight;
+  canvasEl.width  = window.innerWidth;
+  canvasEl.height = Math.max(avail, 200);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+  ctx.strokeStyle = '#1a1a2e';
+  ctx.lineWidth = brushSize;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+
+function getPos(e) {
+  const r = canvasEl.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return { x: src.clientX - r.left, y: src.clientY - r.top };
+}
+
+canvasEl.addEventListener('mousedown',  e => { drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvasEl.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+canvasEl.addEventListener('mouseup',    () => drawing=false);
+canvasEl.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvasEl.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+canvasEl.addEventListener('touchend',   () => drawing=false);
+
+function setBrush(size, el) {
+  brushSize = size;
+  ctx.lineWidth = size;
+  document.querySelectorAll('.size-dot').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function clearCanvas() {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+}
+
+function saveWriting() {
+  const dataUrl = canvasEl.toDataURL('image/png');
+  // Check if canvas has any marks (not just white)
+  const img = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+  const hasMarks = Array.from(img.data).some((v, i) => i%4 !== 3 && v < 240);
+  if (!hasMarks) return;
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  writings.unshift({ dataUrl, time: timeStr });
+  // Keep last 5
+  if (writings.length > 5) writings.pop();
+  try { localStorage.setItem('appa_writings', JSON.stringify(writings.map(w => ({...w, dataUrl: w.dataUrl.slice(0,200)+'...'}))));} catch(e){}
+  renderWritingsLog();
+  clearCanvas();
+}
+
+function renderWritingsLog() {
+  const log = document.getElementById('writings-log');
+  log.innerHTML = '';
+  if (writings.length === 0) return;
+  writings.forEach((w, i) => {
+    const entry = document.createElement('div');
+    entry.className = 'writing-entry';
+    const img = document.createElement('img');
+    img.className = 'writing-thumb';
+    img.src = w.dataUrl;
+    const time = document.createElement('span');
+    time.className = 'writing-time';
+    time.textContent = `Written at ${w.time}`;
+    const del = document.createElement('button');
+    del.className = 'writing-del';
+    del.textContent = '✕';
+    del.onclick = () => { writings.splice(i,1); renderWritingsLog(); };
+    const show = document.createElement('button');
+    show.className = 'canvas-btn speak';
+    show.style.cssText = 'flex:0;min-width:auto;padding:6px 10px;font-size:0.7rem;';
+    show.textContent = '🔍 View';
+    show.onclick = () => loadWriting(w.dataUrl);
+    entry.appendChild(img); entry.appendChild(time);
+    entry.appendChild(show); entry.appendChild(del);
+    log.appendChild(entry);
+  });
+  // Reinit canvas height after log changes
+  setTimeout(initCanvas, 50);
+}
+
+function loadWriting(dataUrl) {
+  const image = new Image();
+  image.onload = () => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,canvasEl.width,canvasEl.height);
+    ctx.drawImage(image, 0, 0);
+  };
+  image.src = dataUrl;
+}
+
+async function speakCanvas() {
+  // Check canvas has marks
+  const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+  const hasMarks = Array.from(imgData.data).some((v, i) => i%4 !== 3 && v < 240);
+  if (!hasMarks) { tts('Please write something first', 'en-IN'); return; }
+
+  // If offline, skip OCR entirely
+  if (!navigator.onLine) {
+    const el = document.getElementById('last-text');
+    el.textContent = 'I have written something — please look at the screen';
+    document.getElementById('again-btn').style.display = 'block';
+    tts('I have written something. Please look at the screen.', 'en-IN');
+    return;
+  }
+
+  // Update button to show loading
+  const btn = document.querySelector('.canvas-btn.speak');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Reading…';
+  btn.disabled = true;
+
+  // Show status in last-text bar
+  const el = document.getElementById('last-text');
+  el.textContent = 'Reading your writing…';
+
+  try {
+    const dataUrl = canvasEl.toDataURL('image/png');
+    const base64  = dataUrl.split(',')[1];
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/png', data: base64 }
+            },
+            {
+              type: 'text',
+              text: `This is a handwritten message from a patient in the ICU who cannot speak. He has a spinal injury and is using his finger to write on a touchscreen — his handwriting may be shaky, partial, or hard to read. 
+
+Please do your absolute best to read what he has written. Return ONLY the text you can read, or your best interpretation. If you genuinely cannot make out anything, say "I could not read this clearly". Keep it short. Do not explain or add commentary — just the words he wrote.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data?.content?.[0]?.text?.trim() || '';
+
+    if (text && text.toLowerCase() !== 'i could not read this clearly') {
+      el.textContent = `"${text}"`;
+      document.getElementById('again-btn').style.display = 'block';
+      lastEn = text; lastTa = text;
+      tts(text, lang === 'ta' ? 'ta-IN' : 'en-IN');
+    } else {
+      el.textContent = 'Could not read clearly — please try again';
+      tts('I could not read the writing clearly. Please look at the screen.', 'en-IN');
+    }
+  } catch(e) {
+    el.textContent = 'Could not connect — please look at the screen';
+    tts('I have written something. Please look at the screen.', 'en-IN');
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+function openCanvas() {
+  document.getElementById('canvas-panel').classList.add('active');
+  setTimeout(() => {
+    initCanvas();
+    renderWritingsLog();
+    // Show wifi status on read button
+    const btn = document.querySelector('.canvas-btn.speak');
+    if (btn) btn.textContent = navigator.onLine ? '🔊 Read Aloud (AI)' : '🔊 Read Aloud (no wifi)';
+  }, 100);
+}
+
+function closeCanvas() {
+  document.getElementById('canvas-panel').classList.remove('active');
+}
+
 // ─── VOICE PICKER ────────────────────────────────────────
 let selectedVoice = null;
 
@@ -827,7 +1107,7 @@ window.speechSynthesis.onvoiceschanged = () => {
   if (saved) selectedVoice = saved;
 };
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeSugg(); closeCustom(); stopListen(); closeVoicePicker(); }
+  if (e.key === 'Escape') { closeSugg(); closeCustom(); stopListen(); closeVoicePicker(); closeCanvas(); }
 });
 </script>
 </body>
