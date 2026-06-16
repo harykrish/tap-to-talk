@@ -1,0 +1,13 @@
+# Secrets
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Personal source recordings & intermediate audio (NOT for deploy)
+videos/
+voice_samples/
+
+# OS
+.DS_Store

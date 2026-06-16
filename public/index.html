@@ -38,24 +38,45 @@ body {
   flex-direction: column;
 }
 
+/* ── APP SHELL (centers + frames the app on big screens) ── */
+.app {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+@media (min-width: 1080px) {
+  body { padding: 20px; }
+  .app {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  }
+}
+
 /* ── TOP BAR ── */
 .topbar {
   display:flex; align-items:center; justify-content:space-between;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  gap: 8px;
+  gap: 10px;
 }
-.topbar-title { font-size:1rem; font-weight:900; color:var(--accent); letter-spacing:-0.3px; white-space:nowrap; }
-.topbar-right { display:flex; gap:8px; align-items:center; }
+.topbar-title { font-size:1.05rem; font-weight:900; color:var(--accent); letter-spacing:-0.3px; white-space:nowrap; }
+.topbar-right { display:flex; gap:10px; align-items:center; }
 
 .lang-toggle {
-  display:flex; border-radius:10px; overflow:hidden;
+  display:flex; border-radius:12px; overflow:hidden;
   border: 1px solid var(--border);
 }
 .lang-btn {
-  padding: 6px 12px; font-size:0.78rem; font-weight:800;
+  padding: 10px 16px; font-size:0.9rem; font-weight:800;
   background:transparent; border:none; color:var(--text-dim); cursor:pointer;
   font-family:'Nunito',sans-serif; transition: all 0.2s;
 }
@@ -63,10 +84,10 @@ body {
 
 .listen-btn {
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 7px 12px;
+  border-radius: 12px; padding: 11px 16px;
   color: var(--text); font-family:'Nunito',sans-serif;
-  font-size: 0.78rem; font-weight:800; cursor:pointer;
-  display:flex; align-items:center; gap:5px;
+  font-size: 0.9rem; font-weight:800; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
   transition: all 0.2s; white-space:nowrap;
 }
 .listen-btn.listening { background:var(--danger); border-color:var(--danger); animation: pulse-btn 1s ease-in-out infinite; }
@@ -102,7 +123,7 @@ body {
 }
 .tabs::-webkit-scrollbar { display:none; }
 .tab {
-  padding: 9px 14px; font-size:0.78rem; font-weight:800;
+  padding: 13px 18px; font-size:0.9rem; font-weight:800;
   color:var(--text-dim); cursor:pointer; white-space:nowrap;
   border-bottom: 3px solid transparent; transition: all 0.2s;
   background:transparent; border-top:none; border-left:none; border-right:none;
@@ -114,12 +135,16 @@ body {
 .grid-wrap { flex:1; overflow:hidden; position:relative; }
 .btn-grid {
   position:absolute; inset:0;
-  overflow-y:auto; padding:10px;
-  display:grid; gap:8px;
+  overflow-y:auto; padding:12px;
+  display:grid; gap:10px;
   grid-template-columns: repeat(2, 1fr);
   align-content: start;
   scrollbar-width:thin;
   scrollbar-color: var(--surface2) transparent;
+}
+/* iPad/phone stay at 2 big columns; computers get a tidy 3 */
+@media (min-width: 880px) {
+  .btn-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .btn-grid.hidden { display:none; }
 
@@ -127,20 +152,20 @@ body {
   background: var(--surface);
   border: 2px solid var(--border);
   border-radius: 20px;
-  padding: 18px 10px;
+  padding: 22px 12px;
   cursor:pointer;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  gap:8px; min-height:110px;
+  gap:9px; min-height:128px;
   transition: transform 0.1s, border-color 0.15s, background 0.15s;
   position:relative; overflow:hidden;
   -webkit-tap-highlight-color: transparent;
 }
 .comm-btn:active { transform:scale(0.93); }
 
-.comm-btn .icon { font-size:2.4rem; line-height:1; }
-.comm-btn .len { font-size:1rem; font-weight:800; color:var(--text); text-align:center; line-height:1.2; }
-.comm-btn .lta { font-size:0.82rem; font-weight:600; color:var(--text-dim); text-align:center; line-height:1.3; margin-top:1px; }
+.comm-btn .icon { font-size:2.7rem; line-height:1; }
+.comm-btn .len { font-size:1.12rem; font-weight:800; color:var(--text); text-align:center; line-height:1.2; }
+.comm-btn .lta { font-size:0.88rem; font-weight:600; color:var(--text-dim); text-align:center; line-height:1.3; margin-top:1px; }
 
 .comm-btn.needs { border-color:rgba(45,212,191,0.2); }
 .comm-btn.needs:active { border-color:var(--accent); background:rgba(45,212,191,0.08); }
@@ -154,8 +179,9 @@ body {
 .comm-btn.urgent {
   border-color: var(--danger) !important;
   background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.12));
-  grid-column: span 2;
-  min-height: 80px;
+  grid-column: 1 / -1;
+  padding: 16px;
+  min-height: 124px;
   box-shadow: 0 0 0 2px rgba(239,68,68,0.4), 0 4px 20px rgba(239,68,68,0.3);
   animation: urgent-pulse 2s ease-in-out infinite;
 }
@@ -169,18 +195,18 @@ body {
 
 /* pain scale */
 .pain-row {
-  grid-column: span 2;
+  grid-column: 1 / -1;
   background: var(--surface);
   border: 2px solid rgba(245,158,11,0.2);
   border-radius:16px; padding:12px;
   display:flex; flex-direction:column; gap:8px;
 }
 .pain-label { font-size:0.8rem; font-weight:800; color:var(--text-dim); text-align:center; }
-.pain-scale { display:flex; gap:4px; justify-content:center; }
+.pain-scale { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
 .pain-num {
-  width:32px; height:32px; border-radius:8px;
+  width:44px; height:44px; border-radius:10px;
   border:none; cursor:pointer; font-family:'Nunito',sans-serif;
-  font-size:0.85rem; font-weight:800; transition:transform 0.1s;
+  font-size:1rem; font-weight:800; transition:transform 0.1s;
 }
 .pain-num:active { transform:scale(0.88); }
 
@@ -222,15 +248,16 @@ body {
 
 /* ── SUGGESTIONS PANEL ── */
 .sugg-panel {
-  position:fixed; bottom:0; left:0; right:0; z-index:90;
+  position:fixed; bottom:0; left:50%; right:auto; z-index:90;
+  width:100%; max-width:1040px;
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-radius:20px 20px 0 0;
   padding:14px 14px 28px;
-  transform:translateY(100%); transition:transform 0.38s cubic-bezier(0.34,1.4,0.64,1);
+  transform:translateX(-50%) translateY(100%); transition:transform 0.38s cubic-bezier(0.34,1.4,0.64,1);
   max-height:75vh; overflow-y:auto;
 }
-.sugg-panel.active { transform:translateY(0); }
+.sugg-panel.active { transform:translateX(-50%) translateY(0); }
 .sugg-head {
   display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px;
 }
@@ -252,12 +279,13 @@ body {
 
 /* ── CUSTOM TYPE ── */
 .custom-panel {
-  position:fixed; bottom:0; left:0; right:0; z-index:95;
+  position:fixed; bottom:0; left:50%; right:auto; z-index:95;
+  width:100%; max-width:1040px;
   background:var(--surface); border-top:1px solid var(--border);
   border-radius:20px 20px 0 0; padding:16px;
-  transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
+  transform:translateX(-50%) translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
 }
-.custom-panel.active { transform:translateY(0); }
+.custom-panel.active { transform:translateX(-50%) translateY(0); }
 .custom-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .custom-title { font-size:0.9rem; font-weight:900; color:var(--text-dim); }
 .custom-close { background:transparent; border:none; color:var(--text-dim); font-size:1.1rem; cursor:pointer; padding:4px 8px; }
@@ -276,12 +304,13 @@ body {
 
 /* ── CANVAS PANEL ── */
 #canvas-panel {
-  position:fixed; inset:0; z-index:96;
+  position:fixed; top:0; bottom:0; left:50%; right:auto; z-index:96;
+  width:100%; max-width:1040px;
   background:var(--bg);
   display:flex; flex-direction:column;
-  transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
+  transform:translateX(-50%) translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
 }
-#canvas-panel.active { transform:translateY(0); }
+#canvas-panel.active { transform:translateX(-50%) translateY(0); }
 .canvas-head {
   display:flex; justify-content:space-between; align-items:center;
   padding:14px 16px; border-bottom:1px solid var(--border);
@@ -348,6 +377,8 @@ body {
 </style>
 </head>
 <body>
+
+<div class="app">
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -439,7 +470,6 @@ body {
     </button>
     <button class="comm-btn medical" onclick="tap('Call the nurse please','நர்ஸை அழையுங்கள்')">
       <span class="icon">👩‍⚕️</span><span class="len">Call Nurse</span><span class="lta">நர்ஸை அழையுங்கள்</span>
-    </button>
     </button>
     <button class="comm-btn medical" onclick="tap('Yes','ஆமாம்')">
       <span class="icon">✅</span><span class="len">YES</span><span class="lta">ஆமாம்</span>
@@ -557,6 +587,8 @@ body {
 
 </div><!-- grid-wrap -->
 
+</div><!-- app -->
+
 <!-- Walk link -->
 <a class="walk-link" href="/walk">🚶 Walk Game</a>
 
@@ -628,6 +660,18 @@ let lastEn = '', lastTa = '';
 let recognition = null;
 let listening = false;
 
+// ─── CLONED VOICE (Appa's real voice) ────────────────────
+// Pre-rendered button phrases are looked up in this manifest; anything
+// else (typed/handwritten text) is synthesised live via /api/tts.
+const SEP = String.fromCharCode(1);  // unique key separator
+let voiceMap = {};                 // key: lang + SEP + text -> filename -> "en_0001.mp3"
+const cloneAudio = new Audio();
+cloneAudio.preload = 'auto';
+fetch('/voice/manifest.json')
+  .then(r => r.ok ? r.json() : [])
+  .then(list => list.forEach(e => { voiceMap[e.lang + SEP + e.text] = e.file; }))
+  .catch(() => {});
+
 // ─── PAIN SCALE ──────────────────────────────────────────
 (function buildPain() {
   const colors = ['#22C55E','#4ADE80','#86EFAC','#FDE047','#FBBF24','#FB923C','#F97316','#EF4444','#DC2626','#991B1B'];
@@ -682,7 +726,38 @@ function tap(en, ta) {
 
 function speakAgain() { if (lastEn) tap(lastEn, lastTa); }
 
+// Speak in Appa's cloned voice when possible, else fall back to the browser voice.
+//   1. pre-rendered button phrase  -> play the cached file (works offline once cached)
+//   2. online                      -> synthesise live via /api/tts
+//   3. otherwise                   -> browser speechSynthesis (generic voice)
 function tts(text, langCode) {
+  const lang2 = (langCode || 'en-IN').slice(0, 2);
+  window.speechSynthesis.cancel();
+  try { cloneAudio.pause(); cloneAudio.currentTime = 0; } catch (e) {}
+
+  const file = voiceMap[lang2 + SEP + text];
+  if (file) {
+    cloneAudio.src = '/voice/' + file;
+    cloneAudio.play().catch(() => browserTTS(text, langCode));
+    return;
+  }
+
+  if (navigator.onLine) {
+    fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang: lang2 })
+    })
+      .then(r => { if (!r.ok) throw new Error('tts'); return r.blob(); })
+      .then(b => { cloneAudio.src = URL.createObjectURL(b); return cloneAudio.play(); })
+      .catch(() => browserTTS(text, langCode));
+    return;
+  }
+
+  browserTTS(text, langCode);
+}
+
+function browserTTS(text, langCode) {
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = langCode || 'en-IN';
@@ -863,13 +938,12 @@ const canvasEl = document.getElementById('write-canvas');
 const ctx = canvasEl.getContext('2d');
 
 function initCanvas() {
-  const panel = document.getElementById('canvas-panel');
-  const head   = panel.querySelector('.canvas-head');
-  const speakRow = panel.querySelector('div[style*="speak buttons"]') || panel.children[1];
-  const tools  = panel.querySelector('.canvas-tools');
-  const usedH  = head.offsetHeight + 76 + tools.offsetHeight + 16; // 76 = speak buttons row
-  canvasEl.width  = window.innerWidth;
-  canvasEl.height = Math.max(window.innerHeight - usedH, 250);
+  // Size the drawing buffer to the canvas's actual rendered box so it
+  // matches the (possibly centered/narrower) panel on desktop and lines
+  // up with the touch coordinates from getBoundingClientRect().
+  const rect = canvasEl.getBoundingClientRect();
+  canvasEl.width  = Math.round(rect.width)  || window.innerWidth;
+  canvasEl.height = Math.round(rect.height) || Math.max(window.innerHeight - 220, 250);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
   ctx.strokeStyle = '#1a1a2e';
@@ -1126,6 +1200,16 @@ window.speechSynthesis.onvoiceschanged = () => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeSugg(); closeCustom(); stopListen(); closeVoicePicker(); closeCanvas(); }
 });
+
+// ─── OFFLINE SUPPORT ─────────────────────────────────────
+// Pre-caches the app + all of Appa's voice clips so buttons work with no wifi.
+// Note: service workers only run over HTTPS (or localhost) — so this activates
+// on the deployed URL / home-screen app, not over a plain http LAN address.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

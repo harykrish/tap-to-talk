@@ -1,7 +1,18 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+
+// Minimal .env loader (no dependency) — only fills vars not already set.
+try {
+  for (const line of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+  }
+} catch { /* no .env (e.g. on Railway, where vars come from the dashboard) */ }
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const VOICE_ID = process.env.VOICE_ID || '0SBJGt4w1Y9cGcDYRx10';
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '10mb' }));
@@ -58,6 +69,36 @@ Return ONLY the text you can read or your best interpretation — no explanation
     res.json({ text });
   } catch (e) {
     console.error('OCR error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Live TTS in the cloned voice — for typed text & handwriting (anything not pre-rendered)
+app.post('/api/tts', async (req, res) => {
+  const { text, lang } = req.body;
+  if (!text || !text.trim()) return res.status(400).json({ error: 'No text' });
+
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'ElevenLabs key not configured' });
+
+  try {
+    const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: text.slice(0, 500).replace(/!+/g, '.'),
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.75, similarity_boost: 0.9, style: 0.0, use_speaker_boost: true }
+      })
+    });
+    if (!r.ok) {
+      const detail = (await r.text()).slice(0, 200);
+      return res.status(502).json({ error: 'TTS failed', detail });
+    }
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.send(Buffer.from(await r.arrayBuffer()));
+  } catch (e) {
+    console.error('TTS error:', e);
     res.status(500).json({ error: e.message });
   }
 });

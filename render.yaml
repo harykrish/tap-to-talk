@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: appa-speaks
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      # Set these two as secrets in the Render dashboard (they are git-ignored locally).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      # The cloned voice ("Appa (Naru)") — safe to keep in the repo.
+      - key: VOICE_ID
+        value: 0SBJGt4w1Y9cGcDYRx10
