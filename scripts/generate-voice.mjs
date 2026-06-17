@@ -79,6 +79,16 @@ for (let i = 1; i <= 10; i++) {
   phrases.push({ en: `My pain level is ${i} out of 10`, ta: `என் வலி அளவு 10-ல் ${i}` });
 }
 
+// Comfort-care phrases (added when he could no longer swallow). Appended LAST so
+// every existing clip keeps its file number — only these new ones get synthesized.
+phrases.push(
+  { en: 'There is secretion in my mouth', ta: 'என் வாயில் எச்சில் தேங்கியிருக்கிறது' },
+  { en: 'Can you do suction', ta: 'சக்ஷன் செய்ய முடியுமா?' },
+  { en: 'Please sit me up a little', ta: 'என்னை சற்று உட்கார வையுங்கள்' },
+  { en: 'I feel warm', ta: 'எனக்கு வெப்பமாக இருக்கிறது' },
+  { en: 'I feel cold', ta: 'எனக்கு குளிராக இருக்கிறது' },
+);
+
 // Flatten into per-language entries
 const entries = [];
 for (const p of phrases) {

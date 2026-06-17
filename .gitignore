@@ -11,3 +11,9 @@ voice_samples/
 
 # OS
 .DS_Store
+
+# Personal voice sample for demo narration (do not deploy)
+my_voice/
+
+# Heavy demo media (videos, frames) — kept local, not in git
+demo/
