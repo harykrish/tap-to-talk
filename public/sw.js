@@ -1,6 +1,6 @@
 // Appa Speaks service worker — makes the app + Appa's voice work offline.
 // Bump CACHE when you change the app shell or want to force a full refresh.
-const CACHE = 'appa-v2';
+const CACHE = 'appa-v3';
 const CORE = ['/', '/index.html', '/voice/manifest.json'];
 
 // ── Install: cache the shell + every voice clip listed in the manifest ──
