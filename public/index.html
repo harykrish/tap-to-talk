@@ -838,7 +838,7 @@ const RESPONSES = {
   greet:    [{en:"Hello! Good to see you",ta:"வணக்கம்! பார்க்க மகிழ்ச்சி"},{en:"I am happy you are here",ta:"நீங்கள் இங்கே இருப்பது மகிழ்ச்சி"},{en:"Thank you for coming",ta:"வந்தமைக்கு நன்றி"}],
   howfeel:  [{en:"A little better today",ta:"இன்று சற்று நலமாக உணர்கிறேன்"},{en:"In some pain but managing",ta:"சிறிது வலி இருக்கிறது"},{en:"I am okay, don't worry",ta:"நான் சரி, கவலைப்படாதே"},{en:"Tired but feeling stronger",ta:"சோர்வாக இருக்கிறது ஆனால் வலிமையாக உணர்கிறேன்"}],
   pain:     [{en:"Yes, I have pain here",ta:"ஆமாம், இங்கே வலிக்கிறது"},{en:"The pain is manageable",ta:"வலி தாங்கக்கூடியதாக உள்ளது"},{en:"Please tell the doctor",ta:"டாக்டரிடம் சொல்லுங்கள்"},{en:"I need more medicine",ta:"இன்னும் மருந்து வேண்டும்"}],
-  eat:      [{en:"I am a little hungry",ta:"சிறிது பசிக்கிறது"},{en:"Not hungry right now",ta:"இப்போது பசி இல்லை"},{en:"Water please",ta:"தண்ணீர் தாருங்கள்"}],
+  eat:      [{en:"I am not able to eat right now",ta:"எனக்கு இப்போது சாப்பிட முடியாது"},{en:"The doctor said no food or water yet",ta:"டாக்டர் இன்னும் உணவோ தண்ணீரோ வேண்டாம் என்றார்"},{en:"My mouth is dry, please moisten it",ta:"என் வாய் உலர்ந்துள்ளது, கொஞ்சம் ஈரப்படுத்துங்கள்"}],
   sleep:    [{en:"I did not sleep well",ta:"நான் நன்றாக தூங்கவில்லை"},{en:"I am very tired",ta:"நான் மிகவும் சோர்வாக இருக்கிறேன்"},{en:"Please let me rest",ta:"என்னை ஓய்வெடுக்க விடுங்கள்"}],
   family:   [{en:"I love you so much",ta:"நான் உன்னை மிகவும் நேசிக்கிறேன்"},{en:"I miss everyone at home",ta:"வீட்டினரை நினைக்கிறேன்"},{en:"How is everyone?",ta:"எல்லாரும் எப்படி இருக்கிறார்கள்?"},{en:"I will be home soon",ta:"விரைவில் வீடு திரும்புவேன்"}],
   doctor:   [{en:"What did the doctor say?",ta:"டாக்டர் என்ன சொன்னார்?"},{en:"When is the next check?",ta:"அடுத்த பரிசோதனை எப்போது?"},{en:"Please explain slowly",ta:"மெதுவாக விளக்குங்கள்"}],
@@ -880,7 +880,7 @@ async function showSuggestions(heard) {
         body: JSON.stringify({
           model:'claude-sonnet-4-20250514',
           max_tokens:600,
-          system:`You help a 69-year-old Indian man named Mr. Narayanan respond to people. He cannot speak due to a tracheostomy after a spinal injury. He is mentally sharp. Return ONLY a JSON array of 4 short responses, each with "en" and "ta" (Tamil) fields. No markdown. Max 10 words per response.`,
+          system:`You help a 69-year-old Indian man named Mr. Narayanan respond to people. He cannot speak due to a tracheostomy after a spinal injury. He is mentally sharp. IMPORTANT SAFETY RULE: he is currently nil by mouth — he CANNOT eat or drink anything (swallowing/aspiration risk). NEVER suggest eating, drinking, food, or water. If food or drink comes up, suggest he politely decline (e.g. "I am not able to eat right now"). Return ONLY a JSON array of 4 short responses, each with "en" and "ta" (Tamil) fields. No markdown. Max 10 words per response.`,
           messages:[{role:'user',content:`Someone said: "${heard}"\nReturn JSON array only.`}]
         })
       });
