@@ -633,6 +633,7 @@ body {
   </div>
   <input class="custom-input" id="custom-input" placeholder="Type message here…" />
   <button class="custom-go" onclick="speakCustom()">🔊 Speak This</button>
+  <button class="custom-go" id="custom-wa" onclick="sendCustomWhatsApp()" style="background:#25D366;color:#fff;margin-top:8px;">📲 Send on WhatsApp</button>
 </div>
 
 <!-- CANVAS PANEL -->
@@ -649,6 +650,7 @@ body {
   <div style="display:flex;gap:8px;padding:8px 14px;flex-shrink:0;">
     <button class="canvas-btn" style="background:#6366f1;color:white;font-size:0.95rem;min-height:60px;flex:1;" onclick="speakCanvasDirect()">📣 Get Attention</button>
     <button class="canvas-btn speak" id="ai-read-btn" style="min-height:60px;flex:1;" onclick="speakCanvas()">👁 Read My Writing</button>
+    <button class="canvas-btn" id="canvas-wa" style="background:#25D366;color:#fff;font-size:0.95rem;min-height:60px;flex:1;" onclick="sendCanvasWhatsApp()">📲 WhatsApp</button>
   </div>
 
   <!-- CANVAS fills remaining space -->
@@ -789,6 +791,75 @@ function browserTTS(text, langCode) {
   window.speechSynthesis.speak(u);
 }
 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
+// ─── SEND AS A WHATSAPP VOICE NOTE ───────────────────────
+// Turn text into Appa's cloned-voice mp3, then hand it to the phone's share
+// sheet — from there he picks whichever WhatsApp chat(s)/group(s) to send to.
+//   pre-rendered phrase -> the cached /voice file; anything else -> /api/tts.
+async function synthToBlob(text, langCode) {
+  const lang2 = (langCode || 'en-IN').slice(0, 2);
+  const file = voiceMap[lang2 + SEP + text];
+  if (file) {
+    const r = await fetch('/voice/' + file);
+    if (r.ok) return await r.blob();
+  }
+  if (!navigator.onLine) throw new Error('offline');
+  const r = await fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, lang: lang2 })
+  });
+  if (!r.ok) throw new Error('tts');
+  return await r.blob();
+}
+
+// Open the OS share sheet with the mp3 (WhatsApp, Messages, …). Falls back to
+// a download on browsers without file sharing (most desktops).
+async function shareVoiceNote(blob, text) {
+  const file = new File([blob], 'appa-message.mp3', { type: 'audio/mpeg' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Appa', text });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;  // he cancelled the share sheet
+    }
+  }
+  // Fallback: save the file so it can be attached in WhatsApp manually.
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'appa-message.mp3'; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  alert('Saved the voice note. Open WhatsApp and attach “appa-message.mp3”.');
+}
+
+async function sendVoiceNote(text, langCode, btn) {
+  if (!text || !text.trim()) return;
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Preparing…'; }
+  try {
+    const blob = await synthToBlob(text.trim(), langCode);
+    await shareVoiceNote(blob, text.trim());
+  } catch (e) {
+    alert(e.message === 'offline'
+      ? 'You need internet to make a voice note in Appa’s voice.'
+      : 'Could not create the voice note. Please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = orig; }
+  }
+}
+
+function sendCustomWhatsApp() {
+  const t = document.getElementById('custom-input').value.trim();
+  if (!t) { document.getElementById('custom-input').focus(); return; }
+  sendVoiceNote(t, lang === 'ta' ? 'ta-IN' : 'en-IN', document.getElementById('custom-wa'));
+}
+
+function sendCanvasWhatsApp() {
+  const t = (lastOcrResult || '').trim();
+  if (!t) { alert('First tap “Read My Writing”, then send on WhatsApp.'); return; }
+  sendVoiceNote(t, lang === 'ta' ? 'ta-IN' : 'en-IN', document.getElementById('canvas-wa'));
+}
 
 // ─── LISTEN ──────────────────────────────────────────────
 function toggleListen() {
