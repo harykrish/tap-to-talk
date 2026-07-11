@@ -706,6 +706,24 @@ fetch('/voice/manifest.json')
   .then(list => list.forEach(e => { voiceMap[e.lang + SEP + e.text] = e.file; }))
   .catch(() => {});
 
+// Cache live-generated cloned-voice audio by text, so replaying (🔊 Again) or
+// sharing the SAME message reuses it instead of re-calling (and re-charging) the API.
+const ttsCache = new Map();  // lang2 + SEP + text -> Blob
+async function ttsBlob(text, lang2) {
+  const key = lang2 + SEP + text;
+  if (ttsCache.has(key)) return ttsCache.get(key);
+  const r = await fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, lang: lang2 })
+  });
+  if (!r.ok) throw new Error('tts');
+  const b = await r.blob();
+  ttsCache.set(key, b);
+  if (ttsCache.size > 60) ttsCache.delete(ttsCache.keys().next().value);  // keep it bounded
+  return b;
+}
+
 // ─── PAIN SCALE ──────────────────────────────────────────
 (function buildPain() {
   const colors = ['#22C55E','#4ADE80','#86EFAC','#FDE047','#FBBF24','#FB923C','#F97316','#EF4444','#DC2626','#991B1B'];
@@ -792,12 +810,7 @@ function tts(text, langCode) {
   }
 
   if (navigator.onLine) {
-    fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, lang: lang2 })
-    })
-      .then(r => { if (!r.ok) throw new Error('tts'); return r.blob(); })
+    ttsBlob(text, lang2)
       .then(b => { cloneAudio.src = URL.createObjectURL(b); return cloneAudio.play(); })
       .catch(() => browserTTS(text, langCode));
     return;
@@ -839,13 +852,7 @@ async function synthToBlob(text, langCode) {
     if (r.ok) return await r.blob();
   }
   if (!navigator.onLine) throw new Error('offline');
-  const r = await fetch('/api/tts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, lang: lang2 })
-  });
-  if (!r.ok) throw new Error('tts');
-  return await r.blob();
+  return await ttsBlob(text, lang2);
 }
 
 // Open the OS share sheet with the mp3 (WhatsApp, Messages, …). Falls back to
