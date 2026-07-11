@@ -291,15 +291,28 @@ body {
 .custom-close { background:transparent; border:none; color:var(--text-dim); font-size:1.1rem; cursor:pointer; padding:4px 8px; }
 .custom-input {
   width:100%; background:var(--bg); border:1.5px solid var(--border);
-  border-radius:12px; padding:13px 14px; color:var(--text);
-  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:700;
-  margin-bottom:10px; outline:none;
+  border-radius:14px; padding:16px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:1.15rem; font-weight:700;
+  margin-bottom:12px; outline:none;
 }
 .custom-input:focus { border-color:var(--accent); }
+.custom-actions { display:flex; gap:10px; }
 .custom-go {
-  width:100%; background:var(--accent); border:none; color:#000;
-  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900;
-  padding:14px; border-radius:12px; cursor:pointer;
+  flex:1; width:100%; background:var(--accent); border:none; color:#000;
+  font-family:'Nunito',sans-serif; font-size:1.15rem; font-weight:900;
+  padding:20px 14px; min-height:66px; border-radius:14px; cursor:pointer;
+}
+.custom-go.wa { background:#25D366; color:#fff; }
+.custom-clear {
+  width:100%; margin-top:10px; background:transparent; border:1px solid var(--border);
+  color:var(--text-dim); font-family:'Nunito',sans-serif; font-size:0.95rem; font-weight:800;
+  padding:12px; min-height:48px; border-radius:12px; cursor:pointer;
+}
+#type-fab {
+  position:fixed; left:50%; transform:translateX(-50%); bottom:16px; z-index:90;
+  background:var(--accent); color:#000; border:none; border-radius:999px;
+  font-family:'Nunito',sans-serif; font-size:1.1rem; font-weight:900;
+  padding:16px 28px; min-height:60px; box-shadow:0 8px 24px rgba(0,0,0,0.4); cursor:pointer;
 }
 
 /* ── CANVAS PANEL ── */
@@ -411,6 +424,7 @@ body {
 <div class="last-bar">
   <div class="last-text" id="last-text"><span class="last-empty">Tap any button to speak →</span></div>
   <button class="again-btn" id="again-btn" onclick="speakAgain()">🔊 Again</button>
+  <button class="again-btn" id="share-btn" onclick="shareLast()" style="display:none;background:rgba(37,211,102,0.15);border-color:rgba(37,211,102,0.4);color:#25D366;">📲 Share</button>
 </div>
 
 <!-- TABS -->
@@ -632,9 +646,15 @@ body {
     <button class="custom-close" onclick="closeCustom()">✕</button>
   </div>
   <input class="custom-input" id="custom-input" placeholder="Type message here…" />
-  <button class="custom-go" onclick="speakCustom()">🔊 Speak This</button>
-  <button class="custom-go" id="custom-wa" onclick="sendCustomWhatsApp()" style="background:#25D366;color:#fff;margin-top:8px;">📲 Send on WhatsApp</button>
+  <div class="custom-actions">
+    <button class="custom-go" onclick="speakCustom()">🔊 Speak</button>
+    <button class="custom-go wa" id="custom-wa" onclick="sendCustomWhatsApp()">📲 Share</button>
+  </div>
+  <button class="custom-clear" onclick="clearCustom()">✕ Clear</button>
 </div>
+
+<!-- Always-visible way back into typing (his main feature), thumb-reachable -->
+<button id="type-fab" onclick="openCustom()">⌨️ Type &amp; Speak</button>
 
 <!-- CANVAS PANEL -->
 <div id="canvas-panel">
@@ -726,6 +746,7 @@ function setTab(name, el) {
 
 // ─── SPEAK ───────────────────────────────────────────────
 function tap(en, ta) {
+  buzz();
   lastEn = en; lastTa = ta;
   const txt = lang === 'ta' ? ta : en;
   const code = lang === 'ta' ? 'ta-IN' : 'en-IN';
@@ -733,12 +754,26 @@ function tap(en, ta) {
   const el = document.getElementById('last-text');
   el.textContent = txt;
   el.className = 'last-text';
-  document.getElementById('again-btn').style.display = 'block';
+  showActions();
 
   tts(txt, code);
 }
 
 function speakAgain() { if (lastEn) tap(lastEn, lastTa); }
+
+// Show the Again + Share buttons on the persistent last-message bar.
+function showActions() {
+  const a = document.getElementById('again-btn'); a.style.display = 'block';
+  document.getElementById('share-btn').style.display = 'block';
+}
+// Share the last spoken message as a voice note — works from any mode.
+function shareLast() {
+  if (!lastEn) return;
+  const txt = lang === 'ta' ? lastTa : lastEn;
+  sendVoiceNote(txt, lang === 'ta' ? 'ta-IN' : 'en-IN', document.getElementById('share-btn'));
+}
+// Small confirming buzz on phones so he knows a tap registered.
+function buzz() { try { navigator.vibrate && navigator.vibrate(12); } catch (e) {} }
 
 // Speak in Appa's cloned voice when possible, else fall back to the browser voice.
 //   1. pre-rendered button phrase  -> play the cached file (works offline once cached)
@@ -835,6 +870,7 @@ async function shareVoiceNote(blob, text) {
 
 async function sendVoiceNote(text, langCode, btn) {
   if (!text || !text.trim()) return;
+  buzz();
   const orig = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Preparing…'; }
   try {
@@ -994,18 +1030,42 @@ function closeSugg() {
 // ─── CUSTOM TYPE ─────────────────────────────────────────
 function openCustom() {
   document.getElementById('custom-panel').classList.add('active');
+  const fab = document.getElementById('type-fab'); if (fab) fab.style.display = 'none';
+  kbAdjust();
   setTimeout(() => document.getElementById('custom-input').focus(), 350);
 }
 function closeCustom() {
-  document.getElementById('custom-panel').classList.remove('active');
+  const panel = document.getElementById('custom-panel');
+  panel.classList.remove('active');
+  panel.style.bottom = '';
   document.getElementById('custom-input').value = '';
+  const fab = document.getElementById('type-fab'); if (fab) fab.style.display = '';
+}
+function clearCustom() {
+  const el = document.getElementById('custom-input');
+  el.value = '';
+  el.focus();
 }
 function speakCustom() {
   const t = document.getElementById('custom-input').value.trim();
   if (!t) return;
   tap(t, t);
-  closeCustom();
+  // keep the panel open and the text retained so he can resend, edit, or share
 }
+// Keep the type panel + its buttons above the on-screen keyboard on phones.
+function kbAdjust() {
+  const panel = document.getElementById('custom-panel');
+  if (!panel) return;
+  if (!window.visualViewport || !panel.classList.contains('active')) { panel.style.bottom = ''; return; }
+  const vv = window.visualViewport;
+  panel.style.bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) + 'px';
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', kbAdjust);
+  window.visualViewport.addEventListener('scroll', kbAdjust);
+}
+// His main feature — open Type-to-Speak as soon as the app launches.
+window.addEventListener('load', () => { try { openCustom(); } catch (e) {} });
 document.getElementById('custom-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') speakCustom();
 });
@@ -1125,7 +1185,7 @@ function speakCanvasDirect() {
   // Just announce and show the canvas — nurse/family looks at screen
   const el = document.getElementById('last-text');
   el.textContent = 'I have written something — please look at my screen';
-  document.getElementById('again-btn').style.display = 'block';
+  showActions();
   lastEn = 'I have written something. Please look at my screen.';
   lastTa = 'நான் ஏதோ எழுதியிருக்கிறேன். என் திரையை பாருங்கள்.';
   tts(lang === 'ta' ? lastTa : lastEn, lang === 'ta' ? 'ta-IN' : 'en-IN');
@@ -1141,7 +1201,7 @@ async function speakCanvas() {
   if (lastOcrResult && !canvasDirty) {
     const el = document.getElementById('last-text');
     el.textContent = `"${lastOcrResult}"`;
-    document.getElementById('again-btn').style.display = 'block';
+    showActions();
     lastEn = lastOcrResult; lastTa = lastOcrResult;
     tts(lastOcrResult, lang === 'ta' ? 'ta-IN' : 'en-IN');
     return;
@@ -1151,7 +1211,7 @@ async function speakCanvas() {
   if (!navigator.onLine) {
     const el = document.getElementById('last-text');
     el.textContent = 'I have written something — please look at the screen';
-    document.getElementById('again-btn').style.display = 'block';
+    showActions();
     tts('I have written something. Please look at the screen.', 'en-IN');
     return;
   }
@@ -1181,7 +1241,7 @@ async function speakCanvas() {
 
     if (text && text !== 'UNCLEAR') {
       el.textContent = `"${text}"`;
-      document.getElementById('again-btn').style.display = 'block';
+      showActions();
       lastEn = text; lastTa = text;
       lastOcrResult = text;
       canvasDirty = false;
