@@ -75,11 +75,17 @@ Return ONLY the text you can read or your best interpretation — no explanation
 
 // Live TTS in the cloned voice — for typed text & handwriting (anything not pre-rendered)
 app.post('/api/tts', async (req, res) => {
-  const { text, lang } = req.body;
+  const { text, lang, speed } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'No text' });
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ElevenLabs key not configured' });
+
+  // In-app playback controls speed client-side (playbackRate), so it sends no
+  // speed and we stay neutral at 1.0. Shared voice notes can't carry a playback
+  // rate, so the client sends the chosen speed to bake it into the file here.
+  // ElevenLabs supports 0.7–1.2; clamp so an out-of-range value can't error the call.
+  const genSpeed = Math.min(1.2, Math.max(0.7, Number(speed) || 1.0));
 
   try {
     const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
@@ -88,7 +94,7 @@ app.post('/api/tts', async (req, res) => {
       body: JSON.stringify({
         text: text.slice(0, 500).replace(/!+/g, '.'),
         model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.75, similarity_boost: 0.9, style: 0.0, use_speaker_boost: true }
+        voice_settings: { stability: 0.75, similarity_boost: 1.0, style: 0.0, use_speaker_boost: true, speed: genSpeed }
       })
     });
     if (!r.ok) {

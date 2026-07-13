@@ -113,6 +113,13 @@ body {
   font-family:'Nunito',sans-serif; flex-shrink:0;
   display:none;
 }
+.speed-btn {
+  background: rgba(45,212,191,0.10); border: 1px solid rgba(45,212,191,0.3);
+  color: var(--accent); border-radius:8px; padding:5px 10px;
+  font-size:0.75rem; font-weight:800; cursor:pointer;
+  font-family:'Nunito',sans-serif; flex-shrink:0;
+  min-width:44px; text-align:center;
+}
 
 /* ── TABS ── */
 .tabs {
@@ -423,6 +430,7 @@ body {
 <!-- LAST SPOKEN -->
 <div class="last-bar">
   <div class="last-text" id="last-text"><span class="last-empty">Tap any button to speak →</span></div>
+  <button class="speed-btn" id="speed-btn" onclick="cycleSpeed()" title="Playback speed">0.8×</button>
   <button class="again-btn" id="again-btn" onclick="speakAgain()">🔊 Again</button>
   <button class="again-btn" id="share-btn" onclick="shareLast()" style="display:none;background:rgba(37,211,102,0.15);border-color:rgba(37,211,102,0.4);color:#25D366;">📲 Share</button>
 </div>
@@ -701,6 +709,27 @@ const SEP = String.fromCharCode(1);  // unique key separator
 let voiceMap = {};                 // key: lang + SEP + text -> filename -> "en_0001.mp3"
 const cloneAudio = new Audio();
 cloneAudio.preload = 'auto';
+
+// ─── PLAYBACK SPEED (YouTube-style, client-side) ─────────
+// One generated clip, adjustable speed. playbackRate keeps pitch intact in
+// modern browsers (preservesPitch), so slowing down doesn't deepen the voice.
+const SPEEDS = [0.7, 0.8, 1.0, 1.25, 1.5];
+let playbackRate = 0.8;  // default: gentle, easy to follow
+function applyRate() {
+  try {
+    cloneAudio.playbackRate = playbackRate;
+    cloneAudio.preservesPitch = true;
+    cloneAudio.mozPreservesPitch = true;
+    cloneAudio.webkitPreservesPitch = true;
+  } catch (e) {}
+}
+function cycleSpeed() {
+  const i = SPEEDS.indexOf(playbackRate);
+  playbackRate = SPEEDS[(i + 1) % SPEEDS.length];
+  document.getElementById('speed-btn').textContent = playbackRate + '×';
+  applyRate();
+  buzz();
+}
 fetch('/voice/manifest.json')
   .then(r => r.ok ? r.json() : [])
   .then(list => list.forEach(e => { voiceMap[e.lang + SEP + e.text] = e.file; }))
@@ -708,14 +737,14 @@ fetch('/voice/manifest.json')
 
 // Cache live-generated cloned-voice audio by text, so replaying (🔊 Again) or
 // sharing the SAME message reuses it instead of re-calling (and re-charging) the API.
-const ttsCache = new Map();  // lang2 + SEP + text -> Blob
-async function ttsBlob(text, lang2) {
-  const key = lang2 + SEP + text;
+const ttsCache = new Map();  // lang2 + SEP + speed + SEP + text -> Blob
+async function ttsBlob(text, lang2, speed = 1.0) {
+  const key = lang2 + SEP + speed + SEP + text;   // speed baked in → part of the key
   if (ttsCache.has(key)) return ttsCache.get(key);
   const r = await fetch('/api/tts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, lang: lang2 })
+    body: JSON.stringify({ text, lang: lang2, speed })
   });
   if (!r.ok) throw new Error('tts');
   const b = await r.blob();
@@ -805,13 +834,14 @@ function tts(text, langCode) {
   const file = voiceMap[lang2 + SEP + text];
   if (file) {
     cloneAudio.src = '/voice/' + file;
+    applyRate();
     cloneAudio.play().catch(() => browserTTS(text, langCode));
     return;
   }
 
   if (navigator.onLine) {
     ttsBlob(text, lang2)
-      .then(b => { cloneAudio.src = URL.createObjectURL(b); return cloneAudio.play(); })
+      .then(b => { cloneAudio.src = URL.createObjectURL(b); applyRate(); return cloneAudio.play(); })
       .catch(() => browserTTS(text, langCode));
     return;
   }
@@ -823,7 +853,7 @@ function browserTTS(text, langCode) {
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = langCode || 'en-IN';
-  u.rate = 0.88; u.volume = 1; u.pitch = 0.9;
+  u.rate = playbackRate; u.volume = 1; u.pitch = 0.9;
   const voices = window.speechSynthesis.getVoices();
   // use manually selected voice first
   if (selectedVoice) {
@@ -846,13 +876,19 @@ window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(
 //   pre-rendered phrase -> the cached /voice file; anything else -> /api/tts.
 async function synthToBlob(text, langCode) {
   const lang2 = (langCode || 'en-IN').slice(0, 2);
+  // Shared files can't carry a playback rate, so we bake the chosen speed into
+  // the audio. ElevenLabs' speed range is 0.7–1.2, so clamp the picker's value.
+  const speed = Math.min(1.2, Math.max(0.7, playbackRate));
+
+  // Pre-rendered /voice files are neutral (1.0), so they only serve a neutral
+  // share. At any other speed we must (re)synthesise so the speed is baked in.
   const file = voiceMap[lang2 + SEP + text];
-  if (file) {
+  if (file && speed === 1.0) {
     const r = await fetch('/voice/' + file);
     if (r.ok) return await r.blob();
   }
   if (!navigator.onLine) throw new Error('offline');
-  return await ttsBlob(text, lang2);
+  return await ttsBlob(text, lang2, speed);
 }
 
 // Open the OS share sheet with the mp3 (WhatsApp, Messages, …). Falls back to
