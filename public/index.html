@@ -300,18 +300,44 @@ body {
   width:100%; background:var(--bg); border:1.5px solid var(--border);
   border-radius:14px; padding:16px; color:var(--text);
   font-family:'Nunito',sans-serif; font-size:1.15rem; font-weight:700;
-  margin-bottom:12px; outline:none;
+  min-height:88px; max-height:132px; line-height:1.35; resize:none;
+  margin-bottom:8px; outline:none;
 }
 .custom-input:focus { border-color:var(--accent); }
+.custom-safe-hint {
+  color:var(--text-dim); font-size:0.78rem; font-weight:700;
+  line-height:1.3; margin:0 2px 10px;
+}
+.custom-safe-hint.saved { color:var(--success); }
+.starter-grid {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px; margin-bottom:10px;
+}
+.starter-btn {
+  min-height:46px; padding:8px 10px; border-radius:11px;
+  background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:800;
+  cursor:pointer; text-align:left; line-height:1.2;
+}
+.starter-btn small { display:block; color:var(--text-dim); font-size:0.68rem; margin-top:2px; }
+.starter-btn:active { transform:scale(0.98); border-color:var(--accent); }
 .custom-actions { display:flex; gap:10px; }
 .custom-go {
   flex:1; width:100%; background:var(--accent); border:none; color:#000;
-  font-family:'Nunito',sans-serif; font-size:1.15rem; font-weight:900;
+  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900;
   padding:20px 14px; min-height:66px; border-radius:14px; cursor:pointer;
 }
-.custom-go.wa { background:#25D366; color:#fff; }
+.custom-go.note { background:var(--purple); color:#111827; }
+.custom-secondary-actions { display:flex; gap:10px; margin-top:10px; }
+.custom-secondary-actions .custom-clear { margin-top:0; }
+.custom-share {
+  flex:1; min-height:48px; padding:12px; border-radius:12px;
+  background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.35);
+  color:#4ade80; font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:800;
+  cursor:pointer;
+}
 .custom-clear {
-  width:100%; margin-top:10px; background:transparent; border:1px solid var(--border);
+  flex:1; width:100%; margin-top:10px; background:transparent; border:1px solid var(--border);
   color:var(--text-dim); font-family:'Nunito',sans-serif; font-size:0.95rem; font-weight:800;
   padding:12px; min-height:48px; border-radius:12px; cursor:pointer;
 }
@@ -320,6 +346,56 @@ body {
   background:var(--accent); color:#000; border:none; border-radius:999px;
   font-family:'Nunito',sans-serif; font-size:1.1rem; font-weight:900;
   padding:16px 28px; min-height:60px; box-shadow:0 8px 24px rgba(0,0,0,0.4); cursor:pointer;
+}
+
+/* ── TYPED NOTES ── */
+#notes-panel {
+  position:fixed; top:0; bottom:0; left:50%; right:auto; z-index:97;
+  width:100%; max-width:1040px; background:var(--bg);
+  display:flex; flex-direction:column;
+  transform:translateX(-50%) translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
+}
+#notes-panel.active { transform:translateX(-50%) translateY(0); }
+.notes-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; background:var(--surface); border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.notes-title { font-size:1.05rem; font-weight:900; color:var(--text); }
+.notes-sub { font-size:0.75rem; color:var(--text-dim); margin-top:2px; }
+.notes-close {
+  min-width:48px; min-height:48px; border-radius:12px; cursor:pointer;
+  background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  font-size:1rem; font-weight:900;
+}
+.notes-list { flex:1; overflow-y:auto; padding:14px; }
+.notes-empty {
+  margin:32px auto; max-width:320px; text-align:center; color:var(--text-dim);
+  line-height:1.55; font-size:0.95rem;
+}
+.notes-day {
+  margin:14px 2px 8px; color:var(--accent); font-size:0.78rem;
+  font-weight:900; text-transform:uppercase; letter-spacing:0.7px;
+}
+.note-entry {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:13px; margin-bottom:9px;
+}
+.note-meta { color:var(--text-dim); font-size:0.72rem; font-weight:700; margin-bottom:5px; }
+.note-text { color:var(--text); font-size:1rem; font-weight:700; line-height:1.4; white-space:pre-wrap; }
+.note-actions { display:flex; gap:8px; margin-top:10px; }
+.note-action {
+  min-height:46px; padding:8px 14px; border-radius:10px; cursor:pointer;
+  background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800;
+}
+.note-action.speak { flex:1; background:rgba(45,212,191,0.12); color:var(--accent); border-color:rgba(45,212,191,0.3); }
+.note-action.delete { color:#fca5a5; }
+.notes-new {
+  margin:10px 14px 14px; min-height:60px; flex-shrink:0;
+  background:var(--accent); color:#000; border:none; border-radius:14px;
+  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900; cursor:pointer;
 }
 
 /* ── CANVAS PANEL ── */
@@ -441,7 +517,7 @@ body {
   <button class="tab" onclick="setTab('medical',this)">🏥 Medical</button>
   <button class="tab" onclick="setTab('emotion',this)">💛 Feelings</button>
   <button class="tab" onclick="setTab('family',this)">👨‍👩‍👧 Family</button>
-  <button class="tab" onclick="setTab('custom',this)">✍️ Write</button>
+  <button class="tab" onclick="setTab('custom',this)">📝 Notes</button>
 </div>
 
 <!-- GRIDS -->
@@ -612,6 +688,11 @@ body {
       <span class="len">Type to Speak</span>
       <span class="lta">தட்டச்சு செய்யுங்கள்</span>
     </button>
+    <button class="comm-btn emotion" style="min-height:110px;" onclick="openNotes()">
+      <span class="icon">📝</span>
+      <span class="len">My Notes</span>
+      <span class="lta">என் குறிப்புகள்</span>
+    </button>
     <button class="comm-btn needs" style="min-height:110px;" onclick="openCanvas()">
       <span class="icon">✍️</span>
       <span class="len">Write with Finger</span>
@@ -650,19 +731,42 @@ body {
 <!-- CUSTOM PANEL -->
 <div class="custom-panel" id="custom-panel">
   <div class="custom-head">
-    <div class="custom-title">Type to Speak</div>
-    <button class="custom-close" onclick="closeCustom()">✕</button>
+    <div class="custom-title">Type — nothing speaks until you tap</div>
+    <button class="custom-close" aria-label="Close typing" onclick="closeCustom()">✕</button>
   </div>
-  <input class="custom-input" id="custom-input" placeholder="Type message here…" />
+  <textarea class="custom-input" id="custom-input" rows="2" enterkeyhint="done" autocomplete="on" autocapitalize="sentences" placeholder="Type message here…" aria-label="Message"></textarea>
+  <div class="starter-grid" aria-label="Quick sentence starters">
+    <button class="starter-btn" onclick="insertStarter('I need ', 'எனக்கு ')">I need…<small>எனக்கு…</small></button>
+    <button class="starter-btn" onclick="insertStarter('I feel ', 'எனக்கு ')">I feel…<small>எனக்கு…</small></button>
+    <button class="starter-btn" onclick="insertStarter('Please ', 'தயவுசெய்து ')">Please…<small>தயவுசெய்து…</small></button>
+    <button class="starter-btn" onclick="insertStarter('Ask the doctor ', 'டாக்டரிடம் கேளுங்கள் ')">Ask the doctor…<small>டாக்டரிடம் கேளுங்கள்…</small></button>
+  </div>
+  <div class="custom-safe-hint" id="custom-note-status" role="status" aria-live="polite">Spoken typed messages are saved in My Notes.</div>
   <div class="custom-actions">
-    <button class="custom-go" onclick="speakCustom()">🔊 Speak</button>
-    <button class="custom-go wa" id="custom-wa" onclick="sendCustomWhatsApp()">📲 Share</button>
+    <button class="custom-go" id="custom-speak" onclick="speakCustom()">🔊 Speak &amp; Save</button>
+    <button class="custom-go note" onclick="saveCustomNote()">📝 Save Only</button>
   </div>
-  <button class="custom-clear" onclick="clearCustom()">✕ Clear</button>
+  <div class="custom-secondary-actions">
+    <button class="custom-share" id="custom-wa" onclick="sendCustomWhatsApp()">📲 Share</button>
+    <button class="custom-clear" onclick="clearCustom()">✕ Clear</button>
+  </div>
 </div>
 
 <!-- Always-visible way back into typing (his main feature), thumb-reachable -->
 <button id="type-fab" onclick="openCustom()">⌨️ Type &amp; Speak</button>
+
+<!-- TYPED NOTES PANEL -->
+<div id="notes-panel" aria-hidden="true">
+  <div class="notes-head">
+    <div>
+      <div class="notes-title">📝 My Notes</div>
+      <div class="notes-sub">Saved on this device · does not alert the nurse</div>
+    </div>
+    <button class="notes-close" aria-label="Close notes" onclick="closeNotes()">✕</button>
+  </div>
+  <div class="notes-list" id="notes-list"></div>
+  <button class="notes-new" onclick="closeNotes(); openCustom();">⌨️ Type a New Message</button>
+</div>
 
 <!-- CANVAS PANEL -->
 <div id="canvas-panel">
@@ -701,6 +805,9 @@ let lang = 'en';
 let lastEn = '', lastTa = '';
 let recognition = null;
 let listening = false;
+const TYPED_NOTES_KEY = 'appa_typed_notes_v1';
+let typedNotes = loadTypedNotes();
+let noteStatusTimer = null;
 
 // ─── CLONED VOICE (Appa's real voice) ────────────────────
 // Pre-rendered button phrases are looked up in this manifest; anything
@@ -1071,6 +1178,63 @@ function closeSugg() {
 }
 
 // ─── CUSTOM TYPE ─────────────────────────────────────────
+function loadTypedNotes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TYPED_NOTES_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter(n => n && typeof n.text === 'string') : [];
+  } catch (e) { return []; }
+}
+
+function persistTypedNotes() {
+  try { localStorage.setItem(TYPED_NOTES_KEY, JSON.stringify(typedNotes.slice(-200))); } catch (e) {}
+}
+
+function showNoteStatus(message) {
+  const status = document.getElementById('custom-note-status');
+  if (!status) return;
+  status.textContent = message;
+  status.classList.add('saved');
+  clearTimeout(noteStatusTimer);
+  noteStatusTimer = setTimeout(() => {
+    status.textContent = 'Spoken typed messages are saved in My Notes.';
+    status.classList.remove('saved');
+  }, 2600);
+}
+
+function addTypedNote(text, source) {
+  const clean = String(text || '').trim();
+  if (!clean) return false;
+  const now = Date.now();
+  const previous = typedNotes[typedNotes.length - 1];
+  // Guard against an unsteady double tap creating two identical entries.
+  if (previous && previous.text === clean && now - new Date(previous.createdAt).getTime() < 4000) {
+    showNoteStatus('Already saved in My Notes');
+    return false;
+  }
+  typedNotes.push({
+    id: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : `note-${now}-${Math.random().toString(36).slice(2)}`,
+    text: clean,
+    lang,
+    source: source || 'typed',
+    createdAt: new Date(now).toISOString()
+  });
+  if (typedNotes.length > 200) typedNotes = typedNotes.slice(-200);
+  persistTypedNotes();
+  renderNotes();
+  showNoteStatus(source === 'spoken' ? 'Spoken and saved in My Notes' : 'Saved silently in My Notes');
+  return true;
+}
+
+function insertStarter(en, ta) {
+  const el = document.getElementById('custom-input');
+  const insertion = lang === 'ta' ? ta : en;
+  const start = Number.isInteger(el.selectionStart) ? el.selectionStart : el.value.length;
+  const end = Number.isInteger(el.selectionEnd) ? el.selectionEnd : start;
+  el.setRangeText(insertion, start, end, 'end');
+  el.focus();
+  buzz();
+}
+
 function openCustom() {
   document.getElementById('custom-panel').classList.add('active');
   const fab = document.getElementById('type-fab'); if (fab) fab.style.display = 'none';
@@ -1081,20 +1245,123 @@ function closeCustom() {
   const panel = document.getElementById('custom-panel');
   panel.classList.remove('active');
   panel.style.bottom = '';
-  document.getElementById('custom-input').value = '';
   const fab = document.getElementById('type-fab'); if (fab) fab.style.display = '';
 }
 function clearCustom() {
   const el = document.getElementById('custom-input');
   el.value = '';
+  showNoteStatus('Cleared — nothing was spoken');
   el.focus();
 }
 function speakCustom() {
   const t = document.getElementById('custom-input').value.trim();
   if (!t) return;
+  addTypedNote(t, 'spoken');
   tap(t, t);
   // keep the panel open and the text retained so he can resend, edit, or share
 }
+function saveCustomNote() {
+  const t = document.getElementById('custom-input').value.trim();
+  if (!t) { document.getElementById('custom-input').focus(); return; }
+  buzz();
+  addTypedNote(t, 'silent');
+}
+
+function openNotes() {
+  const panel = document.getElementById('notes-panel');
+  panel.classList.add('active');
+  panel.setAttribute('aria-hidden', 'false');
+  const fab = document.getElementById('type-fab'); if (fab) fab.style.display = 'none';
+  renderNotes();
+  requestAnimationFrame(() => {
+    const list = document.getElementById('notes-list');
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
+function closeNotes() {
+  const panel = document.getElementById('notes-panel');
+  panel.classList.remove('active');
+  panel.setAttribute('aria-hidden', 'true');
+  const fab = document.getElementById('type-fab'); if (fab) fab.style.display = '';
+}
+
+function noteDayLabel(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+  const key = d.toDateString();
+  if (key === today.toDateString()) return 'Today';
+  if (key === yesterday.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' });
+}
+
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  if (!list) return;
+  list.replaceChildren();
+  if (!typedNotes.length) {
+    const empty = document.createElement('div');
+    empty.className = 'notes-empty';
+    empty.textContent = 'No notes yet. Type a message and tap Speak & Save, or use Save Only.';
+    list.appendChild(empty);
+    return;
+  }
+  let shownDay = '';
+  typedNotes.forEach(note => {
+    const day = noteDayLabel(note.createdAt);
+    if (day !== shownDay) {
+      const heading = document.createElement('div');
+      heading.className = 'notes-day';
+      heading.textContent = day;
+      list.appendChild(heading);
+      shownDay = day;
+    }
+    const entry = document.createElement('article');
+    entry.className = 'note-entry';
+    const meta = document.createElement('div');
+    meta.className = 'note-meta';
+    meta.textContent = `${new Date(note.createdAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · ${note.source === 'silent' ? 'saved silently' : 'spoken'}`;
+    const body = document.createElement('div');
+    body.className = 'note-text';
+    body.textContent = note.text;
+    const actions = document.createElement('div');
+    actions.className = 'note-actions';
+    const speak = document.createElement('button');
+    speak.className = 'note-action speak';
+    speak.textContent = '🔊 Speak';
+    speak.onclick = () => speakTypedNote(note.id);
+    const del = document.createElement('button');
+    del.className = 'note-action delete';
+    del.textContent = 'Delete';
+    del.setAttribute('aria-label', `Delete note: ${note.text}`);
+    del.onclick = () => deleteTypedNote(note.id);
+    actions.append(speak, del);
+    entry.append(meta, body, actions);
+    list.appendChild(entry);
+  });
+}
+
+function speakTypedNote(id) {
+  const note = typedNotes.find(n => n.id === id);
+  if (!note) return;
+  buzz();
+  lastEn = note.text; lastTa = note.text;
+  const el = document.getElementById('last-text');
+  el.textContent = note.text;
+  el.className = 'last-text';
+  showActions();
+  tts(note.text, note.lang === 'ta' ? 'ta-IN' : 'en-IN');
+}
+
+function deleteTypedNote(id) {
+  const note = typedNotes.find(n => n.id === id);
+  if (!note || !confirm('Delete this note?')) return;
+  typedNotes = typedNotes.filter(n => n.id !== id);
+  persistTypedNotes();
+  renderNotes();
+}
+
 // Keep the type panel + its buttons above the on-screen keyboard on phones.
 function kbAdjust() {
   const panel = document.getElementById('custom-panel');
@@ -1109,9 +1376,7 @@ if (window.visualViewport) {
 }
 // His main feature — open Type-to-Speak as soon as the app launches.
 window.addEventListener('load', () => { try { openCustom(); } catch (e) {} });
-document.getElementById('custom-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') speakCustom();
-});
+// Keyboard input never triggers speech. Only the visible Speak & Save button can.
 
 // ─── CANVAS / WRITE ──────────────────────────────────────
 let drawing = false;
