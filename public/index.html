@@ -327,9 +327,15 @@ body {
   font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900;
   padding:20px 14px; min-height:66px; border-radius:14px; cursor:pointer;
 }
-.custom-go.note { background:var(--purple); color:#111827; }
+.custom-go.save { background:var(--purple); color:#111827; }
 .custom-secondary-actions { display:flex; gap:10px; margin-top:10px; }
 .custom-secondary-actions .custom-clear { margin-top:0; }
+.custom-save-only {
+  flex:1.15; min-height:48px; padding:12px 8px; border-radius:12px;
+  background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.35);
+  color:#c4b5fd; font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:800;
+  cursor:pointer;
+}
 .custom-share {
   flex:1; min-height:48px; padding:12px; border-radius:12px;
   background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.35);
@@ -741,12 +747,13 @@ body {
     <button class="starter-btn" onclick="insertStarter('Please ', 'தயவுசெய்து ')">Please…<small>தயவுசெய்து…</small></button>
     <button class="starter-btn" onclick="insertStarter('Ask the doctor ', 'டாக்டரிடம் கேளுங்கள் ')">Ask the doctor…<small>டாக்டரிடம் கேளுங்கள்…</small></button>
   </div>
-  <div class="custom-safe-hint" id="custom-note-status" role="status" aria-live="polite">Spoken typed messages are saved in My Notes.</div>
+  <div class="custom-safe-hint" id="custom-note-status" role="status" aria-live="polite">Choose whether this message should be saved.</div>
   <div class="custom-actions">
-    <button class="custom-go" id="custom-speak" onclick="speakCustom()">🔊 Speak &amp; Save</button>
-    <button class="custom-go note" onclick="saveCustomNote()">📝 Save Only</button>
+    <button class="custom-go" id="custom-speak-only" onclick="speakCustomOnly()">🔊 Speak Only</button>
+    <button class="custom-go save" id="custom-speak-save" onclick="speakAndSaveCustom()">🔊＋📝 Speak &amp; Save</button>
   </div>
   <div class="custom-secondary-actions">
+    <button class="custom-save-only" onclick="saveCustomNote()">📝 Save Only</button>
     <button class="custom-share" id="custom-wa" onclick="sendCustomWhatsApp()">📲 Share</button>
     <button class="custom-clear" onclick="clearCustom()">✕ Clear</button>
   </div>
@@ -1196,7 +1203,7 @@ function showNoteStatus(message) {
   status.classList.add('saved');
   clearTimeout(noteStatusTimer);
   noteStatusTimer = setTimeout(() => {
-    status.textContent = 'Spoken typed messages are saved in My Notes.';
+    status.textContent = 'Choose whether this message should be saved.';
     status.classList.remove('saved');
   }, 2600);
 }
@@ -1253,16 +1260,27 @@ function clearCustom() {
   showNoteStatus('Cleared — nothing was spoken');
   el.focus();
 }
-function speakCustom() {
+function customMessage() {
   const t = document.getElementById('custom-input').value.trim();
+  if (!t) document.getElementById('custom-input').focus();
+  return t;
+}
+function speakCustomOnly() {
+  const t = customMessage();
+  if (!t) return;
+  tap(t, t);
+  showNoteStatus('Spoken only — not saved');
+}
+function speakAndSaveCustom() {
+  const t = customMessage();
   if (!t) return;
   addTypedNote(t, 'spoken');
   tap(t, t);
   // keep the panel open and the text retained so he can resend, edit, or share
 }
 function saveCustomNote() {
-  const t = document.getElementById('custom-input').value.trim();
-  if (!t) { document.getElementById('custom-input').focus(); return; }
+  const t = customMessage();
+  if (!t) return;
   buzz();
   addTypedNote(t, 'silent');
 }
@@ -1321,7 +1339,7 @@ function renderNotes() {
     entry.className = 'note-entry';
     const meta = document.createElement('div');
     meta.className = 'note-meta';
-    meta.textContent = `${new Date(note.createdAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · ${note.source === 'silent' ? 'saved silently' : 'spoken'}`;
+    meta.textContent = `${new Date(note.createdAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · ${note.source === 'silent' ? 'saved silently' : 'spoken & saved'}`;
     const body = document.createElement('div');
     body.className = 'note-text';
     body.textContent = note.text;
@@ -1376,7 +1394,7 @@ if (window.visualViewport) {
 }
 // His main feature — open Type-to-Speak as soon as the app launches.
 window.addEventListener('load', () => { try { openCustom(); } catch (e) {} });
-// Keyboard input never triggers speech. Only the visible Speak & Save button can.
+// Keyboard input never triggers speech. Only the two visible Speak buttons can.
 
 // ─── CANVAS / WRITE ──────────────────────────────────────
 let drawing = false;
